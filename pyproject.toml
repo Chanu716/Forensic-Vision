@@ -1,0 +1,27 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "forensic-vision"
+version = "0.1.0"
+description = "Phase 1 reproduction of inter-frame video forgery detection and localization."
+readme = "README.md"
+requires-python = ">=3.10"
+dependencies = [
+  "numpy>=1.26",
+  "opencv-python>=4.10",
+  "pandas>=2.2",
+  "PyYAML>=6.0",
+  "scikit-image>=0.24",
+  "scikit-learn>=1.5",
+  "torch>=2.3",
+  "torchvision>=0.18",
+  "tqdm>=4.66",
+]
+
+[tool.setuptools]
+package-dir = {"" = "src"}
+
+[tool.setuptools.packages.find]
+where = ["src"]

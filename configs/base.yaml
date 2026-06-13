@@ -1,0 +1,34 @@
+experiment:
+  name: phase1_baseline
+  seed: 42
+
+data:
+  root_dir: data
+  raw_dir: data/raw
+  processed_dir: data/processed
+  manifests_dir: data/manifests
+  image_size: [112, 112]
+  clip_length: 49
+  channels: 3
+  num_classes: 3
+  class_names:
+    - authentic
+    - frame_insertion
+    - frame_deletion
+
+training:
+  batch_size: 16
+  epochs: 40
+  learning_rate: 0.001
+  weight_decay: 0.0005
+  num_workers: 4
+
+model:
+  in_channels: 3
+  clip_length: 49
+  num_classes: 3
+  conv_channels: [32, 64, 128]
+  dropout: 0.2
+
+localization:
+  threshold: 0.8
