@@ -7,10 +7,20 @@ data:
   raw_dir: data/raw
   processed_dir: data/processed
   manifests_dir: data/manifests
+  interim_dir: data/interim
   image_size: [112, 112]
   clip_length: 49
+  clip_stride: 49
   channels: 3
   num_classes: 3
+  video_extensions: [".avi", ".mp4", ".mov", ".mkv"]
+  train_ratio: 0.75
+  val_ratio: 0.10
+  test_ratio: 0.15
+  forgery_lengths: [10, 30, 50, 75, 100, 150]
+  max_videos_per_class:
+  resize_interpolation: linear
+  save_intermediate_videos: true
   class_names:
     - authentic
     - frame_insertion

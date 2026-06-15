@@ -13,6 +13,7 @@ class VideoSample:
     split: str
     label: str
     clip_path: str
+    donor_video: str | None = None
     forgery_start: int | None = None
     forgery_end: int | None = None
     codec: str | None = None

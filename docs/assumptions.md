@@ -10,6 +10,9 @@ This file records assumptions required to rebuild the paper without the original
 4. The paper mentions Adam optimization, learning rate `0.001`, weight decay `0.0005`, batch size `16`, and `40` epochs. These are used directly where applicable.
 5. The absolute-difference preprocessing is implemented as frame-wise differencing and exposed as a configurable preprocessing step so we can run the required ablation.
 6. The localization threshold defaults to `0.8` as described in the paper, but remains configurable for validation.
+7. Dataset preparation uses reproducible train/validation/test splitting from discovered raw videos because the exact author split is not provided.
+8. Forged videos are generated in code with donor frames sampled from a different source video for insertion and contiguous frame removal for deletion.
+9. Processed training samples are stored as `.npy` clip tensors to keep the first reproduction pipeline simple and inspectable.
 
 ## Pending assumptions
 
