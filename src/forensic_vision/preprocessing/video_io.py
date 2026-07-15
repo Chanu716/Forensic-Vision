@@ -19,18 +19,18 @@ def read_video_frames(
 
     fps = capture.get(cv2.CAP_PROP_FPS) or 0.0
     frames: list[np.ndarray] = []
-
-    while True:
-        ok, frame = capture.read()
-        if not ok:
-            break
-        frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
-        if image_size is not None:
-            width, height = image_size
-            frame = cv2.resize(frame, (width, height), interpolation=cv2.INTER_LINEAR)
-        frames.append(frame)
-
-    capture.release()
+    try:
+        while True:
+            ok, frame = capture.read()
+            if not ok:
+                break
+            frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+            if image_size is not None:
+                width, height = image_size
+                frame = cv2.resize(frame, (width, height), interpolation=cv2.INTER_LINEAR)
+            frames.append(frame)
+    finally:
+        capture.release()
 
     if not frames:
         raise ValueError(f"No frames found in video: {video_path}")

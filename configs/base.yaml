@@ -32,6 +32,8 @@ training:
   learning_rate: 0.001
   weight_decay: 0.0005
   num_workers: 4
+  checkpoint_dir: outputs/checkpoints
+  reports_dir: outputs/reports
 
 model:
   in_channels: 3

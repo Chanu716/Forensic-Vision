@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import math
 import random
+import warnings
 from dataclasses import dataclass
 from pathlib import Path
 
@@ -175,12 +176,30 @@ def prepare_dataset(
     samples: list[VideoSample] = []
 
     for split_name, split_videos_list in splits.items():
-        loaded: list[tuple[Path, np.ndarray, float]] = []
+        readable_videos: list[Path] = []
         for video_path in split_videos_list:
-            frames, fps = read_video_frames(video_path, image_size=image_size)
-            loaded.append((video_path, frames, fps))
+            try:
+                # Probe readability without keeping every decoded video in memory.
+                read_video_frames(video_path, image_size=image_size)
+            except Exception as exc:
+                warnings.warn(f"Skipping unreadable video {video_path}: {exc}", RuntimeWarning)
+                continue
+            readable_videos.append(video_path)
 
-        for index, (video_path, frames, fps) in enumerate(loaded):
+        if len(readable_videos) < 2:
+            warnings.warn(
+                f"Skipping split '{split_name}' because fewer than two readable videos were found.",
+                RuntimeWarning,
+            )
+            continue
+
+        for video_path in readable_videos:
+            try:
+                frames, fps = read_video_frames(video_path, image_size=image_size)
+            except Exception as exc:
+                warnings.warn(f"Skipping unreadable video {video_path}: {exc}", RuntimeWarning)
+                continue
+
             authentic_record = make_authentic_record(video_path, split_name, fps)
             samples.extend(
                 materialize_clips(
@@ -192,8 +211,27 @@ def prepare_dataset(
                 )
             )
 
-            donor_candidates = [item for j, item in enumerate(loaded) if j != index]
-            donor_path, donor_frames, _ = rng.choice(donor_candidates)
+            donor_paths = [path for path in readable_videos if path != video_path]
+            rng.shuffle(donor_paths)
+
+            donor_path: Path | None = None
+            donor_frames: np.ndarray | None = None
+            for candidate in donor_paths:
+                try:
+                    candidate_frames, _ = read_video_frames(candidate, image_size=image_size)
+                except Exception as exc:
+                    warnings.warn(f"Skipping unreadable donor video {candidate}: {exc}", RuntimeWarning)
+                    continue
+                donor_path = candidate
+                donor_frames = candidate_frames
+                break
+
+            if donor_path is None or donor_frames is None:
+                warnings.warn(
+                    f"Skipping insertion forgery for {video_path} because no readable donor video was found.",
+                    RuntimeWarning,
+                )
+                continue
 
             insertion_frames, insertion_start, insertion_end = create_insertion_forgery(
                 frames,
@@ -224,32 +262,38 @@ def prepare_dataset(
                 )
             )
 
-            deletion_frames, deletion_start, deletion_end = create_deletion_forgery(
-                frames,
-                lengths=forgery_lengths,
-                rng=rng,
-            )
-            deletion_record = PreparedVideo(
-                path=_video_output_path(interim_dir, split_name, "frame_deletion", f"{video_path.stem}_delete"),
-                split=split_name,
-                sample_id=f"del_{video_path.stem}",
-                label="frame_deletion",
-                source_video=str(video_path),
-                forgery_start=deletion_start,
-                forgery_end=deletion_end,
-                fps=fps,
-            )
-            if save_intermediate_videos:
-                write_video_frames(deletion_frames, deletion_record.path, fps)
-            samples.extend(
-                materialize_clips(
-                    frames=deletion_frames,
-                    record=deletion_record,
-                    processed_dir=processed_dir,
-                    clip_length=clip_length,
-                    clip_stride=clip_stride,
+            try:
+                deletion_frames, deletion_start, deletion_end = create_deletion_forgery(
+                    frames,
+                    lengths=forgery_lengths,
+                    rng=rng,
                 )
-            )
+                deletion_record = PreparedVideo(
+                    path=_video_output_path(interim_dir, split_name, "frame_deletion", f"{video_path.stem}_delete"),
+                    split=split_name,
+                    sample_id=f"del_{video_path.stem}",
+                    label="frame_deletion",
+                    source_video=str(video_path),
+                    forgery_start=deletion_start,
+                    forgery_end=deletion_end,
+                    fps=fps,
+                )
+                if save_intermediate_videos:
+                    write_video_frames(deletion_frames, deletion_record.path, fps)
+                samples.extend(
+                    materialize_clips(
+                        frames=deletion_frames,
+                        record=deletion_record,
+                        processed_dir=processed_dir,
+                        clip_length=clip_length,
+                        clip_stride=clip_stride,
+                    )
+                )
+            except Exception as exc:
+                warnings.warn(f"Skipping deletion forgery for {video_path}: {exc}", RuntimeWarning)
+
+            del frames
+            del donor_frames
 
     save_manifest(samples, manifests_dir / "clips_manifest.csv")
     return samples

@@ -58,6 +58,41 @@ This will:
 - save grouped `.npy` clip tensors in `data/processed/`
 - save a clip manifest in `data/manifests/clips_manifest.csv`
 
+## Training
+
+Train the baseline from the prepared manifest:
+
+```bash
+python scripts/train.py --config configs/base.yaml
+```
+
+This writes checkpoints to `outputs/checkpoints/`.
+
+## Evaluation
+
+Evaluate the saved checkpoint on the test split:
+
+```bash
+python scripts/evaluate.py --config configs/base.yaml
+```
+
+This writes metrics JSON and per-sample predictions under `outputs/reports/`.
+
+## Inference And Localization
+
+Run prediction and temporal localization on a single input video:
+
+```bash
+python scripts/infer_localize.py --config configs/base.yaml --video path/to/video.mp4
+```
+
+This writes a JSON report under `outputs/reports/` with:
+
+- predicted class
+- averaged clip probabilities
+- per-clip predictions
+- suspicious frame transitions from the localization step
+
 ## Paper assumptions
 
 The source paper omits several implementation details. Assumptions and deviations are tracked in [docs/assumptions.md](/d:/Forensic Vision/Forensic-Vision/docs/assumptions.md).
