@@ -31,7 +31,7 @@ training:
   epochs: 40
   learning_rate: 0.001
   weight_decay: 0.0005
-  num_workers: 4
+  num_workers: 0
   checkpoint_dir: outputs/checkpoints
   reports_dir: outputs/reports
 

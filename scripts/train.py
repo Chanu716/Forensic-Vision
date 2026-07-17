@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import argparse
 import json
+from collections import Counter
 import sys
 from pathlib import Path
 
@@ -19,6 +20,27 @@ from forensic_vision.evaluation.metrics import ClassificationMetrics
 from forensic_vision.models.three_d_cnn import Forgery3DCNN
 from forensic_vision.training import build_dataloader, run_epoch
 from forensic_vision.utils.repro import set_seed
+
+
+def compute_class_weights(dataset: object, class_names: list[str]) -> torch.Tensor:
+    records = getattr(dataset, "records", None)
+    if records is None:
+        raise AttributeError("Training dataset does not expose records for class weighting.")
+
+    label_counts = Counter(record["label"] for record in records)
+    total_samples = sum(label_counts.values())
+    num_classes = len(class_names)
+    weights = []
+
+    for class_name in class_names:
+        count = label_counts.get(class_name, 0)
+        if count == 0:
+            raise ValueError(
+                f"Cannot compute class weight because class '{class_name}' has no training samples."
+            )
+        weights.append(total_samples / (num_classes * count))
+
+    return torch.tensor(weights, dtype=torch.float32)
 
 
 def checkpoint_payload(
@@ -99,7 +121,8 @@ def main() -> None:
         shuffle=False,
     )
 
-    criterion = nn.CrossEntropyLoss()
+    class_weights = compute_class_weights(train_loader.dataset, class_names).to(device)
+    criterion = nn.CrossEntropyLoss(weight=class_weights)
     optimizer = Adam(
         model.parameters(),
         lr=training_cfg["learning_rate"],
@@ -113,6 +136,7 @@ def main() -> None:
     print(f"Training on device: {device}")
     print(f"Train samples: {len(train_loader.dataset)}")
     print(f"Val samples: {len(val_loader.dataset)}")
+    print(f"Class weights: {class_weights.detach().cpu().tolist()}")
 
     for epoch in range(1, training_cfg["epochs"] + 1):
         train_loss, train_metrics = run_epoch(
