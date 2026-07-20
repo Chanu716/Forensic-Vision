@@ -16,3 +16,9 @@ dist/
 
 .DS_Store
 Thumbs.db
+
+# Dataset and large generated files
+data/
+data/**/*.npy
+outputs/
+train.log

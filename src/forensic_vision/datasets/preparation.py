@@ -29,6 +29,7 @@ def discover_videos(
     raw_dir: str | Path,
     extensions: tuple[str, ...],
     max_videos_per_class: int | None = None,
+    seed: int | None = None,
 ) -> list[Path]:
     root = Path(raw_dir)
     videos = sorted(
@@ -37,7 +38,22 @@ def discover_videos(
         if path.is_file() and path.suffix.lower() in extensions
     )
     if max_videos_per_class is not None:
-        return videos[:max_videos_per_class]
+        by_class: dict[str, list[Path]] = {}
+        for video in videos:
+            try:
+                class_name = video.relative_to(root).parts[0]
+            except ValueError:
+                class_name = video.parent.name
+            by_class.setdefault(class_name, []).append(video)
+
+        rng = random.Random(seed)
+        selected: list[Path] = []
+        for class_name in sorted(by_class):
+            class_videos = list(by_class[class_name])
+            rng.shuffle(class_videos)
+            selected.extend(class_videos[:max_videos_per_class])
+
+        return sorted(selected)
     return videos
 
 
@@ -156,7 +172,12 @@ def prepare_dataset(
     max_videos_per_class: int | None = None,
     save_intermediate_videos: bool = True,
 ) -> list[VideoSample]:
-    videos = discover_videos(raw_dir, video_extensions, max_videos_per_class=max_videos_per_class)
+    videos = discover_videos(
+        raw_dir,
+        video_extensions,
+        max_videos_per_class=max_videos_per_class,
+        seed=seed,
+    )
     if len(videos) < 2:
         raise ValueError("At least two raw videos are required to generate insertion forgeries.")
 

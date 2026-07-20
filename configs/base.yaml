@@ -10,7 +10,7 @@ data:
   interim_dir: data/interim
   image_size: [112, 112]
   clip_length: 49
-  clip_stride: 49
+  clip_stride: 24
   channels: 3
   num_classes: 3
   video_extensions: [".avi", ".mp4", ".mov", ".mkv"]
@@ -18,7 +18,7 @@ data:
   val_ratio: 0.10
   test_ratio: 0.15
   forgery_lengths: [10, 30, 50, 75, 100, 150]
-  max_videos_per_class:
+  max_videos_per_class: 40
   resize_interpolation: linear
   save_intermediate_videos: true
   class_names:
