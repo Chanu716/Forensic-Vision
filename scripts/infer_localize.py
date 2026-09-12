@@ -82,11 +82,16 @@ def main() -> None:
         device_name = "cuda" if torch.cuda.is_available() else "cpu"
     device = torch.device(device_name)
 
-    model = Forgery3DCNN(
+    arch = model_cfg.get("arch", "3dcnn")
+    model = build_model(
+        arch=arch,
         in_channels=model_cfg["in_channels"],
         num_classes=model_cfg["num_classes"],
         conv_channels=tuple(model_cfg["conv_channels"]),
         dropout=model_cfg["dropout"],
+        use_frame_difference=model_cfg.get("use_frame_difference", True),
+        diff_threshold=model_cfg.get("diff_threshold", None),
+        use_cbam=model_cfg.get("use_cbam", True),
     ).to(device)
     checkpoint = torch.load(checkpoint_path, map_location=device)
     model.load_state_dict(checkpoint["model_state_dict"])
@@ -112,7 +117,10 @@ def main() -> None:
 
     localization = compute_frame_msssim_scores(
         frames=frames,
-        threshold=float(localization_cfg["threshold"]),
+        threshold=float(localization_cfg.get("threshold", 0.8)),
+        use_adaptive_threshold=bool(localization_cfg.get("use_adaptive_threshold", True)),
+        adaptive_sensitivity=float(localization_cfg.get("adaptive_sensitivity", 2.5)),
+        use_multiscale=bool(localization_cfg.get("use_multiscale", True)),
     )
 
     clip_predictions = []
@@ -147,9 +155,14 @@ def main() -> None:
             class_names[class_index]: float(probability)
             for class_index, probability in enumerate(mean_probabilities.tolist())
         },
-        "localization_threshold": float(localization_cfg["threshold"]),
-        "suspicious_frame_indices": localization.suspicious_indices,
-        "localization_scores": localization.scores,
+        "localization": {
+            "effective_threshold": float(localization.dynamic_threshold),
+            "detected_forgery_type": localization.forgery_type,
+            "detected_start_frame": localization.start_frame,
+            "detected_end_frame": localization.end_frame,
+            "suspicious_frame_indices": localization.suspicious_indices,
+            "scores": localization.scores,
+        },
         "clip_predictions": clip_predictions,
     }
 

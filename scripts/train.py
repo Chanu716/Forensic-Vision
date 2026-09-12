@@ -97,11 +97,16 @@ def main() -> None:
         device_name = "cuda" if torch.cuda.is_available() else "cpu"
     device = torch.device(device_name)
 
-    model = Forgery3DCNN(
+    arch = model_cfg.get("arch", "3dcnn")
+    model = build_model(
+        arch=arch,
         in_channels=model_cfg["in_channels"],
         num_classes=model_cfg["num_classes"],
         conv_channels=tuple(model_cfg["conv_channels"]),
         dropout=model_cfg["dropout"],
+        use_frame_difference=model_cfg.get("use_frame_difference", True),
+        diff_threshold=model_cfg.get("diff_threshold", None),
+        use_cbam=model_cfg.get("use_cbam", True),
     ).to(device)
 
     train_loader = build_dataloader(
@@ -122,11 +127,17 @@ def main() -> None:
     )
 
     class_weights = compute_class_weights(train_loader.dataset, class_names).to(device)
-    criterion = nn.CrossEntropyLoss(weight=class_weights)
+    label_smoothing = training_cfg.get("label_smoothing", 0.0)
+    criterion = nn.CrossEntropyLoss(weight=class_weights, label_smoothing=label_smoothing)
     optimizer = Adam(
         model.parameters(),
         lr=training_cfg["learning_rate"],
         weight_decay=training_cfg["weight_decay"],
+    )
+    scheduler = (
+        torch.optim.lr_scheduler.CosineAnnealingLR(optimizer, T_max=training_cfg["epochs"])
+        if training_cfg.get("use_cosine_scheduler", False)
+        else None
     )
 
     history: list[dict[str, float]] = []
@@ -153,6 +164,9 @@ def main() -> None:
             device=device,
             optimizer=None,
         )
+        if scheduler is not None:
+            scheduler.step()
+
 
         summary = {
             "epoch": epoch,

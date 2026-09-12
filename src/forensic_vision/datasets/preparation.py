@@ -133,6 +133,24 @@ def create_deletion_forgery(
     return forged, delete_start, delete_end - 1
 
 
+def create_duplication_forgery(
+    source_frames: np.ndarray,
+    lengths: list[int],
+    rng: random.Random,
+) -> tuple[np.ndarray, int, int]:
+    dup_len = choose_forgery_length(len(source_frames), lengths, rng)
+    source_start = rng.randint(0, max(0, len(source_frames) - dup_len))
+    target_start = rng.randint(1, max(1, len(source_frames) - dup_len - 1))
+
+    duplicated_block = source_frames[source_start : source_start + dup_len]
+    forged = np.concatenate(
+        [source_frames[:target_start], duplicated_block, source_frames[target_start:]],
+        axis=0,
+    )
+    return forged, target_start, target_start + dup_len - 1
+
+
+
 def sliding_windows(
     frames: np.ndarray,
     clip_length: int,

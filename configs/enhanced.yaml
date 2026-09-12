@@ -1,0 +1,55 @@
+experiment:
+  name: enhanced_r2plus1d_cbam
+  seed: 42
+
+data:
+  root_dir: data
+  raw_dir: data/raw
+  processed_dir: data/processed
+  manifests_dir: data/manifests
+  interim_dir: data/interim
+  image_size: [112, 112]
+  clip_length: 49
+  clip_stride: 24
+  channels: 3
+  num_classes: 3
+  video_extensions: [".avi", ".mp4", ".mov", ".mkv"]
+  train_ratio: 0.75
+  val_ratio: 0.10
+  test_ratio: 0.15
+  forgery_lengths: [10, 30, 50, 75, 100, 150]
+  max_videos_per_class: 40
+  resize_interpolation: linear
+  save_intermediate_videos: true
+  class_names:
+    - authentic
+    - frame_insertion
+    - frame_deletion
+
+training:
+  batch_size: 16
+  epochs: 40
+  learning_rate: 0.0005
+  weight_decay: 0.0001
+  use_cosine_scheduler: true
+  label_smoothing: 0.1
+  num_workers: 0
+  checkpoint_dir: outputs/checkpoints_enhanced
+  reports_dir: outputs/reports_enhanced
+
+model:
+  arch: r2plus1d_cbam
+  in_channels: 3
+  clip_length: 49
+  num_classes: 3
+  conv_channels: [32, 64, 128]
+  dropout: 0.3
+  use_frame_difference: true
+  use_cbam: true
+  use_gradient_guidance: true
+
+localization:
+  threshold: 0.8
+  use_adaptive_threshold: true
+  adaptive_sensitivity: 2.5
+  use_multiscale: true

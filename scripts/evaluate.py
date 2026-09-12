@@ -64,11 +64,16 @@ def main() -> None:
         device_name = "cuda" if torch.cuda.is_available() else "cpu"
     device = torch.device(device_name)
 
-    model = Forgery3DCNN(
+    arch = model_cfg.get("arch", "3dcnn")
+    model = build_model(
+        arch=arch,
         in_channels=model_cfg["in_channels"],
         num_classes=model_cfg["num_classes"],
         conv_channels=tuple(model_cfg["conv_channels"]),
         dropout=model_cfg["dropout"],
+        use_frame_difference=model_cfg.get("use_frame_difference", True),
+        diff_threshold=model_cfg.get("diff_threshold", None),
+        use_cbam=model_cfg.get("use_cbam", True),
     ).to(device)
 
     checkpoint = torch.load(checkpoint_path, map_location=device)
