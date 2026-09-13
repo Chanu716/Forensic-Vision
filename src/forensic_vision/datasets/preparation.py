@@ -338,6 +338,28 @@ def prepare_dataset(
     return samples
 
 
+def _extract_boundary_clips(
+    frames: np.ndarray,
+    cut_point: int,
+    clip_length: int,
+    offsets: tuple[int, ...],
+) -> list[np.ndarray]:
+    total_len = len(frames)
+    if total_len < clip_length:
+        return []
+    windows: list[np.ndarray] = []
+    seen_starts: set[int] = set()
+    for off in offsets:
+        start = cut_point - clip_length // 2 + off
+        start = max(0, min(total_len - clip_length, start))
+        # Ensure cut_point is strictly inside the clip
+        if start < cut_point < start + clip_length - 1:
+            if start not in seen_starts:
+                seen_starts.add(start)
+                windows.append(frames[start : start + clip_length])
+    return windows
+
+
 def materialize_clips(
     *,
     frames: np.ndarray,
@@ -346,7 +368,33 @@ def materialize_clips(
     clip_length: int,
     clip_stride: int,
 ) -> list[VideoSample]:
-    clips = sliding_windows(frames, clip_length=clip_length, stride=clip_stride)
+    clips: list[np.ndarray] = []
+    if record.label == "frame_deletion" and record.forgery_start is not None:
+        clips = _extract_boundary_clips(
+            frames=frames,
+            cut_point=int(record.forgery_start),
+            clip_length=clip_length,
+            offsets=(-16, -12, -8, -4, 0, 4, 8, 12, 16),
+        )
+    elif record.label == "frame_insertion" and record.forgery_start is not None and record.forgery_end is not None:
+        c1 = _extract_boundary_clips(
+            frames=frames,
+            cut_point=int(record.forgery_start),
+            clip_length=clip_length,
+            offsets=(-16, -8, 0, 8, 16),
+        )
+        c2 = _extract_boundary_clips(
+            frames=frames,
+            cut_point=int(record.forgery_end),
+            clip_length=clip_length,
+            offsets=(-16, -8, 0, 8, 16),
+        )
+        clips = c1 + c2
+
+    # Fall back to sliding windows for authentic videos or if boundary extraction yielded none
+    if not clips:
+        clips = sliding_windows(frames, clip_length=clip_length, stride=clip_stride)
+
     samples: list[VideoSample] = []
     for index, clip in enumerate(clips):
         output_path = _clip_output_path(

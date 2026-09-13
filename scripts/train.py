@@ -17,8 +17,8 @@ if str(SRC_PATH) not in sys.path:
 
 from forensic_vision.config import load_config
 from forensic_vision.evaluation.metrics import ClassificationMetrics
-from forensic_vision.models.three_d_cnn import Forgery3DCNN
-from forensic_vision.training import build_dataloader, run_epoch
+from forensic_vision.models.three_d_cnn import Forgery3DCNN, build_model
+from forensic_vision.training import FocalLoss, build_dataloader, run_epoch
 from forensic_vision.utils.repro import set_seed
 
 
@@ -128,7 +128,15 @@ def main() -> None:
 
     class_weights = compute_class_weights(train_loader.dataset, class_names).to(device)
     label_smoothing = training_cfg.get("label_smoothing", 0.0)
-    criterion = nn.CrossEntropyLoss(weight=class_weights, label_smoothing=label_smoothing)
+    use_focal_loss = training_cfg.get("use_focal_loss", False)
+    if use_focal_loss:
+        criterion = FocalLoss(weight=class_weights, gamma=2.0, label_smoothing=label_smoothing)
+    else:
+        criterion = nn.CrossEntropyLoss(weight=class_weights, label_smoothing=label_smoothing)
+
+    use_amp = training_cfg.get("use_amp", False) and device.type == "cuda"
+    scaler = torch.cuda.amp.GradScaler() if use_amp else None
+
     optimizer = Adam(
         model.parameters(),
         lr=training_cfg["learning_rate"],
@@ -144,7 +152,7 @@ def main() -> None:
     best_val_accuracy = float("-inf")
 
     print(f"Loaded configuration: {args.config}")
-    print(f"Training on device: {device}")
+    print(f"Training on device: {device} (AMP: {use_amp})")
     print(f"Train samples: {len(train_loader.dataset)}")
     print(f"Val samples: {len(val_loader.dataset)}")
     print(f"Class weights: {class_weights.detach().cpu().tolist()}")
@@ -156,6 +164,7 @@ def main() -> None:
             criterion=criterion,
             device=device,
             optimizer=optimizer,
+            scaler=scaler,
         )
         val_loss, val_metrics = run_epoch(
             model=model,
@@ -163,6 +172,7 @@ def main() -> None:
             criterion=criterion,
             device=device,
             optimizer=None,
+            scaler=scaler,
         )
         if scheduler is not None:
             scheduler.step()

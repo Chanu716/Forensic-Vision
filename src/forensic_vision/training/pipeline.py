@@ -7,8 +7,36 @@ from torch import nn
 from torch.optim import Optimizer
 from torch.utils.data import DataLoader
 
+import torch.nn.functional as F
 from forensic_vision.datasets import ForgeryClipDataset
 from forensic_vision.evaluation.metrics import ClassificationMetrics, compute_classification_metrics
+
+
+class FocalLoss(nn.Module):
+    """Focal Loss with Label Smoothing for focusing on hard tampering boundaries."""
+
+    def __init__(
+        self,
+        weight: torch.Tensor | None = None,
+        gamma: float = 2.0,
+        label_smoothing: float = 0.05,
+    ) -> None:
+        super().__init__()
+        self.weight = weight
+        self.gamma = gamma
+        self.label_smoothing = label_smoothing
+
+    def forward(self, inputs: torch.Tensor, targets: torch.Tensor) -> torch.Tensor:
+        ce_loss = F.cross_entropy(
+            inputs,
+            targets,
+            weight=self.weight,
+            label_smoothing=self.label_smoothing,
+            reduction="none",
+        )
+        pt = torch.exp(-ce_loss)
+        focal_loss = ((1.0 - pt) ** self.gamma) * ce_loss
+        return focal_loss.mean()
 
 
 def collate_batch(batch: list) -> tuple[torch.Tensor, torch.Tensor, list[str]]:
@@ -48,6 +76,7 @@ def run_epoch(
     criterion: nn.Module,
     device: torch.device,
     optimizer: Optimizer | None,
+    scaler: torch.cuda.amp.GradScaler | None = None,
 ) -> tuple[float, ClassificationMetrics]:
     is_training = optimizer is not None
     model.train(mode=is_training)
@@ -57,18 +86,26 @@ def run_epoch(
     predictions: list[int] = []
     targets: list[int] = []
 
+    use_amp = scaler is not None and device.type == "cuda"
+
     for clips, labels, _sample_ids in dataloader:
         clips = clips.to(device, non_blocking=True)
         labels = labels.to(device, non_blocking=True)
 
         with torch.set_grad_enabled(is_training):
-            logits = model(clips)
-            loss = criterion(logits, labels)
+            with torch.cuda.amp.autocast(enabled=use_amp):
+                logits = model(clips)
+                loss = criterion(logits, labels)
 
             if optimizer is not None:
                 optimizer.zero_grad(set_to_none=True)
-                loss.backward()
-                optimizer.step()
+                if scaler is not None:
+                    scaler.scale(loss).backward()
+                    scaler.step(optimizer)
+                    scaler.update()
+                else:
+                    loss.backward()
+                    optimizer.step()
 
         batch_size = labels.size(0)
         total_loss += float(loss.item()) * batch_size
@@ -87,6 +124,7 @@ def collect_predictions(
     dataloader: DataLoader,
     criterion: nn.Module,
     device: torch.device,
+    use_amp: bool = False,
 ) -> tuple[float, ClassificationMetrics, list[dict[str, object]]]:
     model.train(mode=False)
 
@@ -101,8 +139,9 @@ def collect_predictions(
             clips = clips.to(device, non_blocking=True)
             labels = labels.to(device, non_blocking=True)
 
-            logits = model(clips)
-            loss = criterion(logits, labels)
+            with torch.cuda.amp.autocast(enabled=use_amp and device.type == "cuda"):
+                logits = model(clips)
+                loss = criterion(logits, labels)
             probabilities = torch.softmax(logits, dim=1)
             predicted_labels = probabilities.argmax(dim=1)
 

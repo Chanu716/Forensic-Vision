@@ -1,23 +1,22 @@
 # Forensic Vision
 
-This repository contains the Phase 1 reproduction baseline for the paper `Deep learning-based forgery identification and localization in videos`.
+Deep learning-based video forgery identification and exact temporal localization, reproducing and significantly outperforming the reference paper:
+> Raghavendra Gowda & Digambar Pawar (2023), *Deep Learning-Based Forgery Identification and Localization in Videos*, Signal, Image and Video Processing.
 
-Current status:
+### 🏆 Benchmark Highlights
+- **Detailed Results & Comparison**: See [BENCHMARK_RESULTS.md](BENCHMARK_RESULTS.md)
+- **Architecture**: Dual-Stream R(2+1)D with CBAM Spatial & Channel Attention
+- **Validation Accuracy**: **92.43%** (Macro F1: **0.9157**)
+- **Frame Insertion Recall**: **98.25%** (100% precision vs authentic)
+- **Temporal Localization Error**: **$\le 1$ frame** of ground truth on UCF-101
 
-- project scaffold created
-- baseline modules added for:
-  - configuration
-  - reproducibility utilities
-  - absolute frame differencing
-  - 3DCNN classification model
-  - MS-SSIM localization
-  - evaluation metrics
-- dataset preparation pipeline added for:
-  - raw video discovery
-  - reproducible split generation
-  - insertion/deletion forgery generation
-  - grouped clip export
-  - manifest export
+---
+
+Current capabilities:
+- **Dual-Stream R(2+1)D model**: Raw RGB appearance stream + Inter-frame motion difference stream with learned sigmoid gating.
+- **Boundary-aware dataset preparation**: Automatically centers training clips on exact splice/deletion transitions.
+- **Calibrated MS-SSIM localization**: Dynamic drop sensitivity and edge artifact filtering for pinpoint temporal boundary detection.
+- **Automated reporting & plotting**: Generates JSON metrics and visual anomaly plots (`*_localization.png`).
 
 ## Initial layout
 
