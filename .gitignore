@@ -20,5 +20,6 @@ Thumbs.db
 # Dataset and large generated files
 data/
 data/**/*.npy
-outputs/
+outputs/*
+!outputs/reports_enhanced/
 train.log

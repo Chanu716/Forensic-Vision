@@ -98,6 +98,15 @@ def build_model(
                 return self.backbone(x)
 
         return WrappedR2Plus1D()
+    elif arch.lower() in ("dual_stream", "dual_stream_r2plus1d", "pretrained_dual_stream", "pretrained"):
+        from forensic_vision.models.dual_stream import DualStreamR2Plus1D
+
+        return DualStreamR2Plus1D(
+            num_classes=num_classes,
+            stage_channels=tuple(conv_channels[:3]),  # type: ignore
+            dropout=dropout,
+            use_cbam=use_cbam,
+        )
     else:
         raise ValueError(f"Unknown architecture type: {arch}")
 

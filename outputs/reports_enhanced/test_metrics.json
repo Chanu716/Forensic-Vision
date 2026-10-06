@@ -1,0 +1,32 @@
+{
+  "split": "test",
+  "checkpoint_path": "outputs\\checkpoints_enhanced\\best.pt",
+  "loss": 0.26688478317567343,
+  "accuracy": 0.8884892086330936,
+  "precision_macro": 0.8734371139115393,
+  "recall_macro": 0.8729765234341893,
+  "f1_macro": 0.873095670596972,
+  "confusion_matrix": [
+    [
+      79,
+      0,
+      13
+    ],
+    [
+      0,
+      112,
+      2
+    ],
+    [
+      16,
+      0,
+      56
+    ]
+  ],
+  "class_names": [
+    "authentic",
+    "frame_insertion",
+    "frame_deletion"
+  ],
+  "num_samples": 278
+}

@@ -15,7 +15,7 @@ if str(SRC_PATH) not in sys.path:
     sys.path.insert(0, str(SRC_PATH))
 
 from forensic_vision.config import load_config
-from forensic_vision.models.three_d_cnn import Forgery3DCNN
+from forensic_vision.models.three_d_cnn import Forgery3DCNN, build_model
 from forensic_vision.training import build_dataloader, collect_predictions
 from forensic_vision.utils.repro import set_seed
 
@@ -93,6 +93,7 @@ def main() -> None:
         dataloader=dataloader,
         criterion=criterion,
         device=device,
+        use_amp=training_cfg.get("use_amp", False),
     )
 
     for row in prediction_rows:

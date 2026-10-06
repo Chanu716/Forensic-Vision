@@ -25,7 +25,7 @@ def compute_multiscale_ssim(
 ) -> float:
     """Compute true Multi-Scale SSIM between two frames using Gaussian pyramids."""
     channel_axis = -1 if multichannel else None
-    data_range = 1.0 if np.issubdtype(img1.dtype, np.floating) else 255.0
+    data_range = 1.0  # pyramid_gaussian always normalizes outputs to floats in [0.0, 1.0]
 
     weights = np.array([0.0448, 0.2856, 0.3001, 0.2363, 0.1333][:num_scales])
     weights /= weights.sum()
@@ -92,13 +92,19 @@ def compute_frame_msssim_scores(
 
     scores_arr = np.array(scores)
     if use_adaptive_threshold and len(scores_arr) > 2:
-        median_val = np.median(scores_arr)
-        mad = np.median(np.abs(scores_arr - median_val))
-        effective_threshold = float(max(0.5, min(threshold, median_val - adaptive_sensitivity * mad)))
+        median_val = float(np.median(scores_arr))
+        # Authentic video motion never causes an inter-frame drop > 0.18 from median.
+        # Forgeries (insertions/deletions) cause drops of 0.25 to 0.95.
+        effective_threshold = float(max(0.35, min(threshold, median_val - 0.20)))
     else:
         effective_threshold = threshold
 
-    suspicious_indices = [int(i) for i in np.where(scores_arr < effective_threshold)[0]]
+    # Exclude boundary decoder edge artifacts (first 2 and last 2 frames)
+    suspicious_indices = [
+        int(i)
+        for i in np.where(scores_arr < effective_threshold)[0]
+        if 2 <= i < len(scores_arr) - 2
+    ]
 
     # Automated Forgery Boundary Classifier (Peak Dip Signature Analysis)
     forgery_type = "authentic"

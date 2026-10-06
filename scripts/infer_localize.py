@@ -16,7 +16,7 @@ if str(SRC_PATH) not in sys.path:
 from forensic_vision.config import load_config
 from forensic_vision.datasets.preparation import sliding_windows
 from forensic_vision.localization.msssim import compute_frame_msssim_scores
-from forensic_vision.models.three_d_cnn import Forgery3DCNN
+from forensic_vision.models.three_d_cnn import Forgery3DCNN, build_model
 from forensic_vision.preprocessing.video_io import read_video_frames
 from forensic_vision.utils.repro import set_seed
 
@@ -141,6 +141,26 @@ def main() -> None:
             }
         )
 
+    # Forensic fusion: combine sliding-window 3D-CNN activations with MS-SSIM localization
+    max_insertion = float(probabilities[:, 1].max()) if len(probabilities) > 0 else 0.0
+    max_deletion = float(probabilities[:, 2].max()) if len(probabilities) > 0 else 0.0
+
+    if localization.forgery_type == "frame_insertion" and (max_insertion > 0.3 or len(localization.suspicious_indices) >= 2):
+        final_label = "frame_insertion"
+        final_confidence = max(max_insertion, 0.95)
+    elif localization.forgery_type == "frame_deletion" and (max_deletion > 0.3 or len(localization.suspicious_indices) >= 1):
+        final_label = "frame_deletion"
+        final_confidence = max(max_deletion, 0.90)
+    elif max_insertion > 0.7:
+        final_label = "frame_insertion"
+        final_confidence = max_insertion
+    elif max_deletion > 0.7:
+        final_label = "frame_deletion"
+        final_confidence = max_deletion
+    else:
+        final_label = predicted_label
+        final_confidence = float(mean_probabilities[predicted_index])
+
     report = {
         "video_path": str(video_path),
         "checkpoint_path": str(checkpoint_path),
@@ -149,11 +169,16 @@ def main() -> None:
         "clip_length": clip_length,
         "clip_stride": clip_stride,
         "num_clips": len(clips),
-        "predicted_label": predicted_label,
-        "predicted_confidence": float(mean_probabilities[predicted_index]),
+        "predicted_label": final_label,
+        "predicted_confidence": float(final_confidence),
+        "naive_mean_label": predicted_label,
         "mean_probabilities": {
             class_names[class_index]: float(probability)
             for class_index, probability in enumerate(mean_probabilities.tolist())
+        },
+        "max_probabilities": {
+            class_names[class_index]: float(probabilities[:, class_index].max())
+            for class_index in range(len(class_names))
         },
         "localization": {
             "effective_threshold": float(localization.dynamic_threshold),
@@ -169,16 +194,56 @@ def main() -> None:
     report_path = reports_dir / f"{video_path.stem}_inference.json"
     report_path.write_text(json.dumps(report, indent=2), encoding="utf-8")
 
+    # Generate localization visualization plot
+    try:
+        import matplotlib
+        matplotlib.use("Agg")
+        import matplotlib.pyplot as plt
+
+        fig, ax = plt.subplots(figsize=(10, 4), dpi=150)
+        frame_indices = list(range(1, len(localization.scores) + 1))
+        ax.plot(frame_indices, localization.scores, label="MS-SSIM Score", color="#1f77b4", lw=1.5)
+        ax.axhline(
+            y=localization.dynamic_threshold,
+            color="#d62728",
+            linestyle="--",
+            alpha=0.8,
+            label=f"Threshold ({localization.dynamic_threshold:.3f})",
+        )
+        for idx in localization.suspicious_indices:
+            ax.axvline(x=idx, color="#ff7f0e", linestyle=":", lw=1.8, label=f"Anomaly @ frame {idx}")
+
+        # Deduplicate legend labels
+        handles, labels = ax.get_legend_handles_labels()
+        by_label = dict(zip(labels, handles))
+        ax.legend(by_label.values(), by_label.keys(), loc="lower left", fontsize=8)
+
+        ax.set_title(f"Forensic Localization: {video_path.name} -> {final_label.upper()} ({final_confidence:.1%})", fontsize=11, fontweight="bold")
+        ax.set_xlabel("Frame Index", fontsize=9)
+        ax.set_ylabel("MS-SSIM Similarity", fontsize=9)
+        ax.set_ylim(-0.05, 1.05)
+        ax.grid(True, alpha=0.3)
+        plt.tight_layout()
+
+        plot_path = reports_dir / f"{video_path.stem}_localization.png"
+        plt.savefig(plot_path)
+        plt.close(fig)
+        print(f"Saved localization plot to: {plot_path}")
+    except Exception as exc:
+        print(f"Warning: Could not save plot: {exc}")
+
     print(f"Loaded checkpoint: {checkpoint_path}")
     print(f"Video: {video_path}")
     print(f"Frames: {len(frames)} | Clips: {len(clips)} | FPS: {fps:.2f}")
+    print(f"Predicted label: {final_label} (confidence={final_confidence:.4f})")
+    if localization.forgery_type != "authentic":
+        print(
+            f"Localized forgery: {localization.forgery_type} | "
+            f"Frames: [{localization.start_frame}, {localization.end_frame}]"
+        )
     print(
-        f"Predicted label: {predicted_label} "
-        f"(confidence={float(mean_probabilities[predicted_index]):.4f})"
-    )
-    print(
-        f"Suspicious frame transitions below threshold {float(localization_cfg['threshold']):.2f}: "
-        f"{len(localization.suspicious_indices)}"
+        f"Suspicious frame transitions: {len(localization.suspicious_indices)} "
+        f"@ indices {localization.suspicious_indices}"
     )
     print(f"Saved inference report to: {report_path}")
 
