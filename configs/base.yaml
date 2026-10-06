@@ -28,14 +28,16 @@ data:
 
 training:
   batch_size: 16
-  epochs: 40
+  epochs: 15
   learning_rate: 0.001
   weight_decay: 0.0005
+  use_amp: true
   num_workers: 0
   checkpoint_dir: outputs/checkpoints
   reports_dir: outputs/reports
 
 model:
+  arch: 3dcnn
   in_channels: 3
   clip_length: 49
   num_classes: 3

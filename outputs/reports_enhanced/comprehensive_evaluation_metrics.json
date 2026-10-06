@@ -1,0 +1,142 @@
+{
+  "dataset": "UCF-101",
+  "checkpoint": "outputs/checkpoints_enhanced/best.pt",
+  "num_test_samples": 278,
+  "roc_pr_metrics": {
+    "per_class": {
+      "authentic": {
+        "roc_auc": 0.9811827956989247,
+        "average_precision": 0.9530801282544075,
+        "num_samples": 92
+      },
+      "frame_insertion": {
+        "roc_auc": 1.0,
+        "average_precision": 1.0,
+        "num_samples": 114
+      },
+      "frame_deletion": {
+        "roc_auc": 0.9659519956850054,
+        "average_precision": 0.9433598094744725,
+        "num_samples": 72
+      }
+    },
+    "macro": {
+      "roc_auc": 0.9838191904963874,
+      "average_precision": 0.9654799792429599
+    },
+    "micro": {
+      "roc_auc": 0.9876753273640081,
+      "average_precision": 0.975125975452623
+    },
+    "bootstrap_ci_95": {
+      "accuracy": [
+        0.9100719424460432,
+        0.9676258992805755
+      ],
+      "macro_f1": [
+        0.8982701373204194,
+        0.9630858198271341
+      ],
+      "macro_auc": [
+        0.9679116947252335,
+        0.993534391092423
+      ]
+    }
+  },
+  "action_category_generalization": {
+    "ApplyEyeMakeup": {
+      "num_samples": 105,
+      "accuracy": 0.9428571428571428,
+      "macro_f1": 0.9252399499234943,
+      "authentic_count": 39,
+      "insertion_count": 46,
+      "deletion_count": 20
+    },
+    "BabyCrawling": {
+      "num_samples": 54,
+      "accuracy": 1.0,
+      "macro_f1": 1.0,
+      "authentic_count": 18,
+      "insertion_count": 20,
+      "deletion_count": 16
+    },
+    "BandMarching": {
+      "num_samples": 24,
+      "accuracy": 0.9583333333333334,
+      "macro_f1": 0.960233918128655,
+      "authentic_count": 7,
+      "insertion_count": 8,
+      "deletion_count": 9
+    },
+    "BaseballPitch": {
+      "num_samples": 11,
+      "accuracy": 1.0,
+      "macro_f1": 1.0,
+      "authentic_count": 5,
+      "insertion_count": 6,
+      "deletion_count": 0
+    },
+    "Basketball": {
+      "num_samples": 50,
+      "accuracy": 0.82,
+      "macro_f1": 0.8078078078078078,
+      "authentic_count": 14,
+      "insertion_count": 18,
+      "deletion_count": 18
+    },
+    "BasketballDunk": {
+      "num_samples": 16,
+      "accuracy": 1.0,
+      "macro_f1": 1.0,
+      "authentic_count": 5,
+      "insertion_count": 6,
+      "deletion_count": 5
+    },
+    "BenchPress": {
+      "num_samples": 18,
+      "accuracy": 1.0,
+      "macro_f1": 1.0,
+      "authentic_count": 4,
+      "insertion_count": 10,
+      "deletion_count": 4
+    }
+  },
+  "perturbation_robustness": {
+    "Clean (No Perturbation)": {
+      "accuracy": 0.9424460431654677,
+      "macro_f1": 0.9337794784002461
+    },
+    "Gaussian Noise (std=0.01)": {
+      "accuracy": 0.9028776978417267,
+      "macro_f1": 0.8836217668320071
+    },
+    "Gaussian Noise (std=0.03)": {
+      "accuracy": 0.8633093525179856,
+      "macro_f1": 0.83094874035241
+    },
+    "Gaussian Noise (std=0.05)": {
+      "accuracy": 0.7949640287769785,
+      "macro_f1": 0.7632636181023278
+    },
+    "Gaussian Blur (sigma=0.5)": {
+      "accuracy": 0.9388489208633094,
+      "macro_f1": 0.9299266276872068
+    },
+    "Gaussian Blur (sigma=1.0)": {
+      "accuracy": 0.9388489208633094,
+      "macro_f1": 0.9299266276872068
+    },
+    "Gaussian Blur (sigma=1.5)": {
+      "accuracy": 0.9388489208633094,
+      "macro_f1": 0.9299266276872068
+    },
+    "Illumination Dimming (-15%)": {
+      "accuracy": 0.9424460431654677,
+      "macro_f1": 0.9337794784002461
+    },
+    "Illumination Boosting (+15%)": {
+      "accuracy": 0.9424460431654677,
+      "macro_f1": 0.9337794784002461
+    }
+  }
+}

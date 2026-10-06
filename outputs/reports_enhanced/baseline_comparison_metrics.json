@@ -1,0 +1,64 @@
+{
+  "baseline_3dcnn": {
+    "accuracy": 0.9424460431654677,
+    "macro_f1": 0.9330895505528947,
+    "macro_auc": 0.9675521206060157,
+    "deletion_auc": 0.944848975188781,
+    "confusion_matrix": [
+      [
+        90,
+        0,
+        2
+      ],
+      [
+        0,
+        113,
+        1
+      ],
+      [
+        13,
+        0,
+        59
+      ]
+    ]
+  },
+  "proposed_enhanced": {
+    "accuracy": 0.9424460431654677,
+    "macro_f1": 0.9337794784002461,
+    "macro_auc": 0.9823782637946433,
+    "deletion_auc": 0.9659519956850054,
+    "confusion_matrix": [
+      [
+        90,
+        0,
+        2
+      ],
+      [
+        0,
+        112,
+        2
+      ],
+      [
+        12,
+        0,
+        60
+      ]
+    ]
+  },
+  "mcnemar_statistical_test": {
+    "contingency_table": [
+      [
+        257,
+        5
+      ],
+      [
+        5,
+        11
+      ]
+    ],
+    "statistic": 0.1,
+    "p_value": 0.7518296340458492,
+    "statistically_significant_005": false,
+    "statistically_significant_001": false
+  }
+}
