@@ -59,9 +59,20 @@ class ForgeryClipDataset(Dataset[ClipSample]):
             raise ValueError(f"Expected clip tensor with shape (T, H, W, C), got {clip.shape}")
 
         clip_tensor = torch.from_numpy(clip).permute(3, 0, 1, 2).float() / 255.0
+
+        if self.split == "train":
+            # 1. Random horizontal flip (p=0.5)
+            if torch.rand(1).item() < 0.5:
+                clip_tensor = torch.flip(clip_tensor, dims=[-1])
+            # 2. Random mild contrast and brightness jitter
+            contrast_factor = 1.0 + (torch.rand(1).item() - 0.5) * 0.16
+            brightness_shift = (torch.rand(1).item() - 0.5) * 0.08
+            clip_tensor = torch.clamp(clip_tensor * contrast_factor + brightness_shift, 0.0, 1.0)
+
         label = self.label_to_index[record["label"]]
         return ClipSample(
             clip=clip_tensor,
             label=label,
             sample_id=str(record["sample_id"]),
         )
+

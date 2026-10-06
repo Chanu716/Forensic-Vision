@@ -39,10 +39,10 @@ All evaluations were conducted on the official **UCF-101** dataset across 8 dive
 
 | Evaluation Split / Level | Sample Count | Accuracy (%) | Precision (Macro) | Recall (Macro) | F1-Score (Macro) | Loss |
 | :--- | :---: | :---: | :---: | :---: | :---: | :---: |
-| **Training (Final Epoch)** | 1,478 clips | **100.00%** | 1.0000 | 1.0000 | 1.0000 | **0.0087** |
-| **Validation Split (Peak)** | 185 clips | **92.43%** | **0.9184** | **0.9192** | **0.9157** | **0.1397** |
-| **Held-Out Test Split (Clips)** | 278 clips | **88.85%** | **0.8734** | **0.8730** | **0.8731** | **0.2669** |
-| **Full Video-Level Evaluation** | 43 videos | **90.70%** | **0.8980** | **0.9020** | **0.8990** | — |
+| **Training (Peak Model Epoch 8)** | 1,478 clips | **97.36%** | 0.9720 | 0.9710 | 0.9715 | **0.0349** |
+| **Validation Split (Peak)** | 185 clips | **94.59%** | **0.9372** | **0.9363** | **0.9367** | **0.0768** |
+| **Held-Out Test Split (Clips)** | 278 clips | **94.24%** | **0.9400** | **0.9314** | **0.9338** | **0.2001** |
+| **Full Video-Level Evaluation** | 43 videos | **93.02%** | **0.9333** | **0.9231** | **0.9282** | — |
 
 ---
 
@@ -52,19 +52,19 @@ From [`outputs/reports_enhanced/test_metrics.json`](outputs/reports_enhanced/tes
 
 | Class Name | Total Samples | Correct | Precision (%) | Recall (%) | F1-Score (%) |
 | :--- | :---: | :---: | :---: | :---: | :---: |
-| **Authentic** | 92 | 79 | **83.16%** | **85.87%** | **84.49%** |
+| **Authentic** | 92 | 90 | **88.24%** | **97.83%** | **92.78%** |
 | **Frame Insertion** | 114 | 112 | **100.00%** | **98.25%** | **99.12%** |
-| **Frame Deletion** | 72 | 56 | **78.87%** | **77.78%** | **78.32%** |
-| **Macro Average** | **278** | **247** | **87.34%** | **87.30%** | **87.31%** |
+| **Frame Deletion** | 72 | 60 | **93.75%** | **83.33%** | **88.24%** |
+| **Macro Average** | **278** | **262** | **94.00%** | **93.14%** | **93.38%** |
 
 #### Test Split Confusion Matrix
 $$\begin{pmatrix}
-\text{Authentic (92)}: & 79 & 0 & 13 \\
+\text{Authentic (92)}: & 90 & 0 & 2 \\
 \text{Insertion (114)}: & 0 & 112 & 2 \\
-\text{Deletion (72)}: & 16 & 0 & 56
+\text{Deletion (72)}: & 12 & 0 & 60
 \end{pmatrix}$$
 
-*Note: For `frame_insertion`, not a single clip was mistaken for authentic (100% precision).*
+*Note: Total test classification errors were cut from 31 down to 16. Authentic false alarms dropped from 13 down to 2.*
 
 ---
 

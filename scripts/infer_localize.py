@@ -144,22 +144,29 @@ def main() -> None:
     # Forensic fusion: combine sliding-window 3D-CNN activations with MS-SSIM localization
     max_insertion = float(probabilities[:, 1].max()) if len(probabilities) > 0 else 0.0
     max_deletion = float(probabilities[:, 2].max()) if len(probabilities) > 0 else 0.0
+    mean_auth = float(mean_probabilities[0])
+    k = max(1, int(np.ceil(0.2 * len(probabilities))))
+    top_k_ins = float(np.mean(np.sort(probabilities[:, 1])[-k:]))
+    top_k_del = float(np.mean(np.sort(probabilities[:, 2])[-k:]))
 
-    if localization.forgery_type == "frame_insertion" and (max_insertion > 0.3 or len(localization.suspicious_indices) >= 2):
-        final_label = "frame_insertion"
-        final_confidence = max(max_insertion, 0.95)
-    elif localization.forgery_type == "frame_deletion" and (max_deletion > 0.3 or len(localization.suspicious_indices) >= 1):
-        final_label = "frame_deletion"
-        final_confidence = max(max_deletion, 0.90)
-    elif max_insertion > 0.7:
+    if max_insertion >= 0.65 and max_insertion > max_deletion:
         final_label = "frame_insertion"
         final_confidence = max_insertion
-    elif max_deletion > 0.7:
+    elif max_deletion >= 0.75 and max_deletion > max_insertion and localization.forgery_type != "authentic":
+        final_label = "frame_deletion"
+        final_confidence = max_deletion
+    elif localization.forgery_type == "frame_insertion" and max_insertion >= 0.20:
+        final_label = "frame_insertion"
+        final_confidence = max(max_insertion, 0.95)
+    elif localization.forgery_type == "frame_deletion" and max_deletion >= 0.10:
+        final_label = "frame_deletion"
+        final_confidence = max(max_deletion, 0.90)
+    elif max_deletion >= 0.50 and max_deletion > max_insertion and max_deletion > mean_auth:
         final_label = "frame_deletion"
         final_confidence = max_deletion
     else:
-        final_label = predicted_label
-        final_confidence = float(mean_probabilities[predicted_index])
+        final_label = "authentic"
+        final_confidence = mean_auth
 
     report = {
         "video_path": str(video_path),

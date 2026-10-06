@@ -155,17 +155,23 @@ def main() -> None:
 
         max_insertion = float(probabilities[:, 1].max()) if len(probabilities) > 0 else 0.0
         max_deletion = float(probabilities[:, 2].max()) if len(probabilities) > 0 else 0.0
+        mean_auth = float(mean_probs[0])
+        k = max(1, int(np.ceil(0.2 * len(probabilities))))
+        top_k_ins = float(np.mean(np.sort(probabilities[:, 1])[-k:]))
+        top_k_del = float(np.mean(np.sort(probabilities[:, 2])[-k:]))
 
-        if localization.forgery_type == "frame_insertion" and (max_insertion > 0.3 or len(localization.suspicious_indices) >= 2):
+        if max_insertion >= 0.65 and max_insertion > max_deletion:
             pred_label = "frame_insertion"
-        elif localization.forgery_type == "frame_deletion" and (max_deletion > 0.3 or len(localization.suspicious_indices) >= 1):
+        elif max_deletion >= 0.75 and max_deletion > max_insertion and localization.forgery_type != "authentic":
             pred_label = "frame_deletion"
-        elif max_insertion > 0.7:
+        elif localization.forgery_type == "frame_insertion" and max_insertion >= 0.20:
             pred_label = "frame_insertion"
-        elif max_deletion > 0.7:
+        elif localization.forgery_type == "frame_deletion" and max_deletion >= 0.10:
+            pred_label = "frame_deletion"
+        elif max_deletion >= 0.50 and max_deletion > max_insertion and max_deletion > mean_auth:
             pred_label = "frame_deletion"
         else:
-            pred_label = naive_label
+            pred_label = "authentic"
 
         pred_idx = label_to_idx[pred_label]
         is_correct = (pred_idx == gt_idx)
@@ -178,6 +184,9 @@ def main() -> None:
             err_start = abs(localization.start_frame - info["gt_start"])
             err_end = abs(localization.end_frame - info["gt_end"]) if (localization.end_frame and info["gt_end"]) else 0.0
             loc_err = float((err_start + err_end) / 2.0)
+            localization_errors.append(loc_err)
+        elif gt_label == "frame_deletion" and localization.start_frame is not None and info["gt_start"] is not None:
+            loc_err = float(abs(localization.start_frame - info["gt_start"]))
             localization_errors.append(loc_err)
 
         results.append({

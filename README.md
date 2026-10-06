@@ -5,9 +5,10 @@ Deep learning-based video forgery identification and exact temporal localization
 
 ### 🏆 Benchmark Highlights
 - **Detailed Results & Comparison**: See [BENCHMARK_RESULTS.md](BENCHMARK_RESULTS.md)
-- **Architecture**: Dual-Stream R(2+1)D with CBAM Spatial & Channel Attention
-- **Validation Accuracy**: **92.43%** (Macro F1: **0.9157**)
-- **Frame Insertion Recall**: **98.25%** (100% precision vs authentic)
+- **Architecture**: Dual-Stream R(2+1)D with CBAM Attention & Temporal Peak-Preserving Pooling (TP-Pool)
+- **Validation Accuracy**: **94.59%** (Macro F1: **0.9367**)
+- **Held-Out Test Accuracy**: **94.24%** (Macro F1: **0.9338**)
+- **Video-Level Accuracy**: **93.02%** (100% on authentic, 100% on insertion, 76.9% on deletion)
 - **Temporal Localization Error**: **$\le 1$ frame** of ground truth on UCF-101
 
 ---

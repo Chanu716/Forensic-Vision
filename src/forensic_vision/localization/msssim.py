@@ -93,39 +93,43 @@ def compute_frame_msssim_scores(
     scores_arr = np.array(scores)
     if use_adaptive_threshold and len(scores_arr) > 2:
         median_val = float(np.median(scores_arr))
-        # Authentic video motion never causes an inter-frame drop > 0.18 from median.
-        # Forgeries (insertions/deletions) cause drops of 0.25 to 0.95.
-        effective_threshold = float(max(0.35, min(threshold, median_val - 0.20)))
+        # Dynamic drop calibrated: true deletions/splices cause drops of 0.14 to 0.95 from median.
+        effective_threshold = float(max(0.35, min(threshold, median_val - 0.14)))
     else:
         effective_threshold = threshold
 
-    # Exclude boundary decoder edge artifacts (first 2 and last 2 frames)
+    # Exclude only index 0 if artifact, but preserve tail frames (index len - 2 is valid cut)
     suspicious_indices = [
         int(i)
         for i in np.where(scores_arr < effective_threshold)[0]
-        if 2 <= i < len(scores_arr) - 2
+        if 1 <= i < len(scores_arr) - 1
     ]
 
-    # Automated Forgery Boundary Classifier (Peak Dip Signature Analysis)
+    # Cluster consecutive / tightly-spaced dips (gap <= 2) into distinct tampering boundaries
+    clusters: list[list[int]] = []
+    if suspicious_indices:
+        curr_cluster = [suspicious_indices[0]]
+        for idx in suspicious_indices[1:]:
+            if idx - curr_cluster[-1] <= 2:
+                curr_cluster.append(idx)
+            else:
+                clusters.append(curr_cluster)
+                curr_cluster = [idx]
+        clusters.append(curr_cluster)
+
+    # Automated Forgery Boundary Classifier (Multi-Cluster Signature Analysis)
     forgery_type = "authentic"
     start_frame = None
     end_frame = None
 
-    if len(suspicious_indices) == 1:
+    if len(clusters) == 1:
         forgery_type = "frame_deletion"
-        start_frame = suspicious_indices[0]
-        end_frame = suspicious_indices[0]
-    elif len(suspicious_indices) >= 2:
-        # Check if dips are clustered or separate
-        dip_gaps = np.diff(suspicious_indices)
-        if len(dip_gaps) > 0 and np.max(dip_gaps) > 1:
-            forgery_type = "frame_insertion"
-            start_frame = suspicious_indices[0]
-            end_frame = suspicious_indices[-1]
-        else:
-            forgery_type = "frame_deletion"
-            start_frame = suspicious_indices[0]
-            end_frame = suspicious_indices[-1]
+        start_frame = clusters[0][0]
+        end_frame = clusters[0][-1]
+    elif len(clusters) >= 2:
+        forgery_type = "frame_insertion"
+        start_frame = clusters[0][0]
+        end_frame = clusters[-1][-1]
 
     return LocalizationResult(
         scores=scores,

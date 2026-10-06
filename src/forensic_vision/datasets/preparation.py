@@ -159,9 +159,17 @@ def sliding_windows(
     if len(frames) < clip_length:
         return []
     windows: list[np.ndarray] = []
+    last_start = -1
     for start in range(0, len(frames) - clip_length + 1, stride):
         windows.append(frames[start : start + clip_length])
+        last_start = start
+    # Guarantee 100% temporal coverage by including trailing window if leftover frames exist
+    if last_start != -1 and (last_start + clip_length < len(frames)):
+        tail_start = len(frames) - clip_length
+        if tail_start > last_start:
+            windows.append(frames[tail_start:])
     return windows
+
 
 
 def _video_output_path(interim_dir: Path, split: str, label: str, stem: str) -> Path:

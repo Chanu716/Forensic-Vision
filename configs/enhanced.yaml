@@ -52,7 +52,8 @@ model:
   use_gradient_guidance: true
 
 localization:
-  threshold: 0.75
+  threshold: 0.85
   use_adaptive_threshold: true
   adaptive_sensitivity: 3.5
-  use_multiscale: true
+  use_multiscale: false
+

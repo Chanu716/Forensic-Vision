@@ -149,7 +149,8 @@ def main() -> None:
     )
 
     history: list[dict[str, float]] = []
-    best_val_accuracy = float("-inf")
+    best_val_f1 = float("-inf")
+    best_val_loss = float("inf")
 
     print(f"Loaded configuration: {args.config}")
     print(f"Training on device: {device} (AMP: {use_amp})")
@@ -176,7 +177,6 @@ def main() -> None:
         )
         if scheduler is not None:
             scheduler.step()
-
 
         summary = {
             "epoch": epoch,
@@ -208,9 +208,12 @@ def main() -> None:
         )
         torch.save(latest_payload, checkpoint_dir / "latest.pt")
 
-        if val_metrics.accuracy > best_val_accuracy:
-            best_val_accuracy = val_metrics.accuracy
+        if (val_metrics.f1_macro > best_val_f1) or (abs(val_metrics.f1_macro - best_val_f1) < 1e-4 and val_loss < best_val_loss):
+            best_val_f1 = val_metrics.f1_macro
+            best_val_loss = val_loss
             torch.save(latest_payload, checkpoint_dir / "best.pt")
+            print(f"  --> Saved new best checkpoint (Val F1: {best_val_f1:.4f}, Val Loss: {best_val_loss:.4f})")
+
 
     history_path = checkpoint_dir / "training_history.json"
     history_path.write_text(json.dumps(history, indent=2), encoding="utf-8")

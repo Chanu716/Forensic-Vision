@@ -1,16 +1,16 @@
 {
   "split": "test",
   "checkpoint_path": "outputs\\checkpoints_enhanced\\best.pt",
-  "loss": 0.26688478317567343,
-  "accuracy": 0.8884892086330936,
-  "precision_macro": 0.8734371139115393,
-  "recall_macro": 0.8729765234341893,
-  "f1_macro": 0.873095670596972,
+  "loss": 0.20010751962876147,
+  "accuracy": 0.9424460431654677,
+  "precision_macro": 0.9399509803921569,
+  "recall_macro": 0.931350114416476,
+  "f1_macro": 0.9337794784002461,
   "confusion_matrix": [
     [
-      79,
+      90,
       0,
-      13
+      2
     ],
     [
       0,
@@ -18,9 +18,9 @@
       2
     ],
     [
-      16,
+      12,
       0,
-      56
+      60
     ]
   ],
   "class_names": [
