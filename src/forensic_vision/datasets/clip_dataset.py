@@ -24,10 +24,12 @@ class ForgeryClipDataset(Dataset[ClipSample]):
         manifest_path: str | Path,
         split: str,
         class_names: list[str],
+        cache_in_memory: bool = False,
     ) -> None:
         self.manifest_path = Path(manifest_path)
         self.split = split
         self.class_names = class_names
+        self.cache_in_memory = cache_in_memory
         self.label_to_index = {label: index for index, label in enumerate(class_names)}
 
         if not self.manifest_path.exists():
@@ -47,14 +49,20 @@ class ForgeryClipDataset(Dataset[ClipSample]):
             )
 
         self.records = split_frame.to_dict(orient="records")
+        self._clip_cache: list[np.ndarray] | None = None
+        if self.cache_in_memory:
+            self._clip_cache = [np.load(r["clip_path"]) for r in self.records]
 
     def __len__(self) -> int:
         return len(self.records)
 
     def __getitem__(self, index: int) -> ClipSample:
         record = self.records[index]
-        clip_path = Path(record["clip_path"])
-        clip = np.load(clip_path)
+        if self._clip_cache is not None:
+            clip = self._clip_cache[index]
+        else:
+            clip_path = Path(record["clip_path"])
+            clip = np.load(clip_path)
         if clip.ndim != 4:
             raise ValueError(f"Expected clip tensor with shape (T, H, W, C), got {clip.shape}")
 

@@ -66,9 +66,12 @@ def build_model(
     use_frame_difference: bool = True,
     diff_threshold: float | None = None,
     use_cbam: bool = True,
+    use_tp_pool: bool = True,
+    use_diff_stream: bool = True,
 ) -> nn.Module:
-    """Build a forgery classifier model by name."""
-    if arch.lower() in ("3dcnn", "baseline"):
+    """Build a forgery classifier model by name or ablation variant."""
+    arch_clean = arch.lower().strip()
+    if arch_clean in ("3dcnn", "baseline", "variant_a"):
         return Forgery3DCNN(
             in_channels=in_channels,
             num_classes=num_classes,
@@ -77,7 +80,40 @@ def build_model(
             use_frame_difference=use_frame_difference,
             diff_threshold=diff_threshold,
         )
-    elif arch.lower() in ("r2plus1d", "r2plus1d_cbam", "enhanced"):
+    elif arch_clean in ("single_stream", "single_stream_r2plus1d", "variant_b"):
+        from forensic_vision.models.dual_stream import DualStreamR2Plus1D
+
+        return DualStreamR2Plus1D(
+            num_classes=num_classes,
+            stage_channels=tuple(conv_channels[:3]),  # type: ignore
+            dropout=dropout,
+            use_cbam=False,
+            use_tp_pool=False,
+            use_diff_stream=False,
+        )
+    elif arch_clean in ("dual_stream_no_cbam", "dual_stream_r2plus1d_no_cbam", "variant_c"):
+        from forensic_vision.models.dual_stream import DualStreamR2Plus1D
+
+        return DualStreamR2Plus1D(
+            num_classes=num_classes,
+            stage_channels=tuple(conv_channels[:3]),  # type: ignore
+            dropout=dropout,
+            use_cbam=False,
+            use_tp_pool=False,
+            use_diff_stream=True,
+        )
+    elif arch_clean in ("dual_stream_cbam_no_tppool", "dual_stream_r2plus1d_cbam", "variant_d"):
+        from forensic_vision.models.dual_stream import DualStreamR2Plus1D
+
+        return DualStreamR2Plus1D(
+            num_classes=num_classes,
+            stage_channels=tuple(conv_channels[:3]),  # type: ignore
+            dropout=dropout,
+            use_cbam=True,
+            use_tp_pool=False,
+            use_diff_stream=True,
+        )
+    elif arch_clean in ("r2plus1d", "r2plus1d_cbam", "enhanced"):
         from forensic_vision.models.r2plus1d import ForgeryR2Plus1D
 
         class WrappedR2Plus1D(nn.Module):
@@ -89,7 +125,7 @@ def build_model(
                     in_channels=in_channels,
                     num_classes=num_classes,
                     stage_channels=tuple(conv_channels[:3]),  # type: ignore
-                    use_cbam=use_cbam if "cbam" in arch.lower() or arch.lower() == "enhanced" else False,
+                    use_cbam=use_cbam if "cbam" in arch_clean or arch_clean == "enhanced" else False,
                     dropout=dropout,
                 )
 
@@ -98,7 +134,7 @@ def build_model(
                 return self.backbone(x)
 
         return WrappedR2Plus1D()
-    elif arch.lower() in ("dual_stream", "dual_stream_r2plus1d", "pretrained_dual_stream", "pretrained"):
+    elif arch_clean in ("dual_stream", "dual_stream_r2plus1d", "pretrained_dual_stream", "pretrained", "variant_e", "full_proposed"):
         from forensic_vision.models.dual_stream import DualStreamR2Plus1D
 
         return DualStreamR2Plus1D(
@@ -106,6 +142,8 @@ def build_model(
             stage_channels=tuple(conv_channels[:3]),  # type: ignore
             dropout=dropout,
             use_cbam=use_cbam,
+            use_tp_pool=use_tp_pool,
+            use_diff_stream=use_diff_stream,
         )
     else:
         raise ValueError(f"Unknown architecture type: {arch}")

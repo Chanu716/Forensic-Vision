@@ -97,7 +97,7 @@ class R2Plus1DResidualBlock(nn.Module):
         if self.downsample is not None:
             identity = self.downsample(identity)
 
-        out += identity
+        out = out + identity
         return self.relu(out)
 
 

@@ -1,8 +1,12 @@
 from __future__ import annotations
 
 import sys
+import unittest
 from pathlib import Path
-import pytest
+try:
+    import pytest
+except ImportError:
+    pytest = None
 import numpy as np
 import torch
 
@@ -83,5 +87,26 @@ def test_temporal_iou() -> None:
     assert iou3 == 0.0, f"Expected 0.0, got {iou3}"
 
 
+class TestEnhancedComponents(unittest.TestCase):
+    def test_attention_3d(self) -> None:
+        test_attention_3d_forward()
+
+    def test_r2plus1d(self) -> None:
+        test_r2plus1d_forward()
+
+    def test_build_model(self) -> None:
+        test_build_model_factory()
+
+    def test_frame_diff(self) -> None:
+        test_frame_diff_enhanced()
+
+    def test_msssim(self) -> None:
+        test_msssim_localization()
+
+    def test_temporal_iou(self) -> None:
+        test_temporal_iou()
+
+
 if __name__ == "__main__":
-    pytest.main([__file__])
+    unittest.main()
+

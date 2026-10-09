@@ -1,0 +1,197 @@
+[
+  {
+    "variant_id": "variant_a",
+    "name": "Variant A: Baseline 3D-CNN",
+    "short_name": "3D-CNN Baseline",
+    "streams": "Diff Only",
+    "temporal_conv": "Conv3D",
+    "attention": "None",
+    "pooling": "Global Avg Pool",
+    "fusion": "None",
+    "parameters": 280131,
+    "accuracy": 0.9424460431654677,
+    "macro_precision": 0.9417997703309323,
+    "macro_recall": 0.9296444613950335,
+    "macro_f1": 0.9330895505528947,
+    "macro_roc_auc_ovr": 0.9675521206060157,
+    "macro_roc_auc_interpolated": 0.9688155200696504,
+    "macro_ap": 0.9242365586958493,
+    "authentic_roc_auc": 0.957807386629266,
+    "insertion_roc_auc": 1.0,
+    "deletion_roc_auc": 0.944848975188781,
+    "video_level_accuracy": 0.8604651162790697,
+    "authentic_specificity": 0.8666666666666667,
+    "insertion_recall": 1.0,
+    "deletion_recall": 0.6923076923076923,
+    "mean_loc_error": 34.388888888888886,
+    "median_loc_error": 2.0,
+    "ci_accuracy": [
+      0.9136690647482014,
+      0.9676258992805755
+    ],
+    "ci_f1": [
+      0.9013770850254151,
+      0.9633420375698979
+    ],
+    "ci_roc_auc": [
+      0.9461046634562686,
+      0.9851953411945995
+    ]
+  },
+  {
+    "variant_id": "variant_b",
+    "name": "Variant B: Single-Stream R(2+1)D",
+    "short_name": "Single-Stream R(2+1)D",
+    "streams": "RGB Only",
+    "temporal_conv": "R(2+1)D Factorized",
+    "attention": "None",
+    "pooling": "Global Avg Pool",
+    "fusion": "None",
+    "parameters": 917462,
+    "accuracy": 0.8812949640287769,
+    "macro_precision": 0.8692592592592593,
+    "macro_recall": 0.8699254174082549,
+    "macro_f1": 0.8686658249158249,
+    "macro_roc_auc_ovr": 0.9725710104965538,
+    "macro_roc_auc_interpolated": 0.9744927704493582,
+    "macro_ap": 0.9391864575963199,
+    "authentic_roc_auc": 0.9662225338943431,
+    "insertion_roc_auc": 0.9975395806589644,
+    "deletion_roc_auc": 0.9539509169363538,
+    "video_level_accuracy": 0.7674418604651163,
+    "authentic_specificity": 0.7333333333333333,
+    "insertion_recall": 0.7333333333333333,
+    "deletion_recall": 0.8461538461538461,
+    "mean_loc_error": 34.388888888888886,
+    "median_loc_error": 2.0,
+    "ci_accuracy": [
+      0.841726618705036,
+      0.920863309352518
+    ],
+    "ci_f1": [
+      0.8244284103057918,
+      0.9091953020469544
+    ],
+    "ci_roc_auc": [
+      0.9577050629312188,
+      0.9859560845591612
+    ]
+  },
+  {
+    "variant_id": "variant_c",
+    "name": "Variant C: Dual-Stream R(2+1)D",
+    "short_name": "Dual-Stream R(2+1)D",
+    "streams": "RGB + Frame Diff",
+    "temporal_conv": "R(2+1)D Factorized",
+    "attention": "None",
+    "pooling": "Global Avg Pool",
+    "fusion": "Gated Sigmoid",
+    "parameters": 1867049,
+    "accuracy": 0.9244604316546763,
+    "macro_precision": 0.920673076923077,
+    "macro_recall": 0.9126197135350452,
+    "macro_f1": 0.9144157663065227,
+    "macro_roc_auc_ovr": 0.9914122301848868,
+    "macro_roc_auc_interpolated": 0.9918658409790384,
+    "macro_ap": 0.9805145591049387,
+    "authentic_roc_auc": 0.9907667134174848,
+    "insertion_roc_auc": 0.9997860504920839,
+    "deletion_roc_auc": 0.9836839266450917,
+    "video_level_accuracy": 0.813953488372093,
+    "authentic_specificity": 0.8,
+    "insertion_recall": 0.8666666666666667,
+    "deletion_recall": 0.7692307692307693,
+    "mean_loc_error": 34.388888888888886,
+    "median_loc_error": 2.0,
+    "ci_accuracy": [
+      0.8920863309352518,
+      0.9532374100719424
+    ],
+    "ci_f1": [
+      0.8764018321603242,
+      0.9459758463719465
+    ],
+    "ci_roc_auc": [
+      0.9855476225706379,
+      0.9961894115793447
+    ]
+  },
+  {
+    "variant_id": "variant_d",
+    "name": "Variant D: Dual-Stream R(2+1)D + CBAM",
+    "short_name": "Dual-Stream + CBAM",
+    "streams": "RGB + Frame Diff",
+    "temporal_conv": "R(2+1)D Factorized",
+    "attention": "3D-CBAM",
+    "pooling": "Global Avg Pool",
+    "fusion": "Gated Sigmoid",
+    "parameters": 1876541,
+    "accuracy": 0.8345323741007195,
+    "macro_precision": 0.8668001334668002,
+    "macro_recall": 0.800682261208577,
+    "macro_f1": 0.7993540872900692,
+    "macro_roc_auc_ovr": 0.9748174008209837,
+    "macro_roc_auc_interpolated": 0.9765280170054651,
+    "macro_ap": 0.9399852063053898,
+    "authentic_roc_auc": 0.9798971482000935,
+    "insertion_roc_auc": 0.9964698331193838,
+    "deletion_roc_auc": 0.9480852211434736,
+    "video_level_accuracy": 0.6976744186046512,
+    "authentic_specificity": 0.8666666666666667,
+    "insertion_recall": 0.8,
+    "deletion_recall": 0.38461538461538464,
+    "mean_loc_error": 34.388888888888886,
+    "median_loc_error": 2.0,
+    "ci_accuracy": [
+      0.7913669064748201,
+      0.8776978417266187
+    ],
+    "ci_f1": [
+      0.7492776083208019,
+      0.8474790922392994
+    ],
+    "ci_roc_auc": [
+      0.9608926003338985,
+      0.9872360662759573
+    ]
+  },
+  {
+    "variant_id": "variant_e",
+    "name": "Variant E: Full Proposed Model",
+    "short_name": "Proposed (Ours + TP-Pool)",
+    "streams": "RGB + Frame Diff",
+    "temporal_conv": "R(2+1)D Factorized",
+    "attention": "3D-CBAM",
+    "pooling": "TP-Pool",
+    "fusion": "Gated Sigmoid",
+    "parameters": 1975101,
+    "accuracy": 0.9424460431654677,
+    "macro_precision": 0.9399509803921569,
+    "macro_recall": 0.931350114416476,
+    "macro_f1": 0.9337794784002461,
+    "macro_roc_auc_ovr": 0.9823782637946433,
+    "macro_roc_auc_interpolated": 0.9838191904963874,
+    "macro_ap": 0.9654799792429599,
+    "authentic_roc_auc": 0.9811827956989247,
+    "insertion_roc_auc": 1.0,
+    "deletion_roc_auc": 0.9659519956850054,
+    "video_level_accuracy": 0.9302325581395349,
+    "authentic_specificity": 1.0,
+    "insertion_recall": 1.0,
+    "deletion_recall": 0.7692307692307693,
+    "mean_loc_error": 34.388888888888886,
+    "median_loc_error": 2.0,
+    "ci_accuracy": [
+      0.9136690647482014,
+      0.9676258992805755
+    ],
+    "ci_f1": [
+      0.900991245448715,
+      0.961437668287758
+    ],
+    "ci_roc_auc": [
+      0.9690467977006763,
+      0.9929492560560514
+    ]
+  }
+]

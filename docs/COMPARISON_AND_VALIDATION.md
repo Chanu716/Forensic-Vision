@@ -30,21 +30,25 @@ To establish rigorous scientific attribution, we evaluate four key configuration
 
 The table below summarizes performance across the held-out test split (278 clips) and end-to-end video-level evaluation (43 full videos):
 
-| Dimension / Metric | Gowda & Pawar (2023) Baseline | Vanilla Dual-Stream (Pre-Enhancement) | Proposed Enhanced Dual-Stream (Ours) | Relative Gain / Impact |
-| :--- | :---: | :---: | :---: | :--- |
-| **Input Modalities** | Frame Diff Only | RGB + Frame Diff | **RGB + Frame Diff** | Joint spatial appearance & motion tracking |
-| **Temporal Pooling** | Global Avg Pooling | Global Avg Pooling | **TP-Pool ($F_{\text{peak}} \,\|\, F_{\text{mean}}$)** | Preserves single-frame tamper spikes |
-| **Attention Mechanism** | None | None | **3D-CBAM (Spatial + Channel)** | Focuses on splice transition boundaries |
-| **Loss Function** | Standard Cross-Entropy | Standard Cross-Entropy | **Focal Loss ($\gamma=2.0$, smooth $0.05$)** | Suppresses simple background frames |
-| **Test Accuracy (Clips)** | 94.24% | 88.85% | **94.24%** [95% CI: 91.01–96.76%] | Robust boundary classification |
-| **Macro F1-Score (Clips)** | 0.9331 | 0.8731 | **0.9338** [95% CI: 0.8983–0.9631] | Balanced across all 3 classes |
-| **Macro ROC-AUC** | 0.9676 | — | **0.9838** [95% CI: 0.9679–0.9935] | **+1.62% AUC improvement** |
-| **Frame Deletion AUC** | 0.9448 | — | **0.9660** (AP = 0.9434) | **+2.12% AUC gain on deletion seams** |
-| **Frame Insertion AUC** | 0.9997 | — | **1.0000** (AP = 1.0000) | Flawless separation of insertion attacks |
-| **Video-Level Accuracy** | 83.72% (36/43) | 90.70% (39/43) | **93.02% (40/43)** | **+9.30% gain vs Gowda & Pawar** |
-| **Authentic Specificity** | 86.67% (2 false alarms) | 93.33% (1 false alarm) | **100.00% (0 false alarms)** | **Zero false alarms on athletic videos** |
-| **Deletion Video Recall** | 61.54% (8/13) | 76.92% (10/13) | **76.92% (10/13)** | Eliminates 3D-CNN temporal blindness |
-| **Temporal Loc. Error** | **14.39 frames** | 3.50 frames | **1.33 frames ($\le 1$ frame)** | **>10x precision improvement** |
+| Dimension / Metric | Gowda & Pawar (2023) Baseline | Proposed Enhanced Dual-Stream (Ours) | Relative Gain / Status |
+| :--- | :---: | :---: | :--- |
+| **Input Modalities** | Frame Diff Only | **RGB + Frame Diff** | Joint spatial appearance & motion tracking |
+| **Temporal Pooling** | Global Avg Pooling | **TP-Pool ($F_{\text{peak}} \,\|\, F_{\text{mean}}$)** | Preserves single-frame tamper spikes |
+| **Attention Mechanism** | None | **3D-CBAM (Spatial + Channel)** | Focuses on splice transition boundaries |
+| **Loss Function** | Standard Cross-Entropy | **Focal Loss ($\gamma=2.0$, smooth $0.05$)** | Suppresses simple background frames |
+| **Test Accuracy (Clips)** | 94.24% (262/278) [95% CI: 91.37–96.76%] | **94.24%** (262/278) [95% CI: 91.37–96.76%] | Identical nominal clip label accuracy ($p = 0.7518$) |
+| **Macro F1-Score (Clips)** | 0.9331 [95% CI: 0.9014–0.9633] | **0.9338** [95% CI: 0.9010–0.9614] | Balanced across all 3 classes |
+| **Macro ROC-AUC (OvR Standard)** | 0.9676 [95% CI: 0.9461–0.9852] | **0.9824** [95% CI: 0.9690–0.9929] | **+1.48% continuous probabilistic margin** |
+| **Macro ROC-AUC (Interpolated)** | 0.9688 | **0.9838** | +1.50% interpolated curve integration gain |
+| **Frame Deletion AUC** | 0.9448 | **0.9660** (AP = 0.9434) | **+2.12% AUC gain on deletion seams** |
+| **Frame Insertion AUC** | 0.9997 | **1.0000** (AP = 1.0000) | Flawless separation of insertion attacks |
+| **Video-Level Accuracy**<br>• *Unified Single-Scale Protocol*<br>• *Original Configuration Protocol* | <br>86.05% (37/43)<br>83.72% (36/43) | <br>**93.02% (40/43)**<br>**93.02% (40/43)** | <br>**+6.97% gain (+3 videos correct)**<br>**+9.30% gain (+4 videos correct)** |
+| **Authentic Specificity** | 86.67% (13/15) | **100.00% (15/15)** | **Zero false alarms on authentic test videos** |
+| **Deletion Video Recall**<br>• *Unified Single-Scale Protocol*<br>• *Original Configuration Protocol* | <br>69.23% (9/13)<br>61.54% (8/13) | <br>**76.92% (10/13)**<br>**76.92% (10/13)** | <br>**+7.69% gain (+1 deletion video correct)**<br>**+15.38% gain (+2 deletion videos correct)** |
+| **Median Localization Error**<br>• *Unified Single-Scale Protocol*<br>• *Original Configuration Protocol* | <br>2.0 frames ($N=27$ detected)<br>1.0 frame ($N=23$ detected) | <br>**2.0 frames** ($N=27$ detected)<br>**2.0 frames** ($N=27$ detected) | Parity on detected videos (SSIM operates on raw frames) |
+| **Mean Localization Error**<br>• *Unified Single-Scale Protocol*<br>• *Original Configuration Protocol* | <br>34.39 frames<br>14.39 frames | <br>**34.39 frames**<br>**34.39 frames** | Skewed by 4 rotational camera-panning failure cases |
+
+*\*Methodological Note on Localization*: The temporal localization transition detector operates on raw frame structural similarity and is mathematically independent of the deep neural network. Both models achieve a median boundary error of 2.0 frames across detected tampered videos under the unified protocol (51.9% within $\le 2$ frames). Localization accuracy must not be attributed to model architectures.
 
 ---
 
@@ -131,22 +135,23 @@ To simulate transmission over social media, re-compression, sensor degradation, 
 
 #### Stress Test Metrics
 
-| Perturbation Scenario | Parameter / Level | Accuracy (%) | Macro F1-Score | Degradation vs Clean | Resilience Assessment |
-| :--- | :---: | :---: | :---: | :---: | :--- |
-| **Clean Baseline** | None | **94.24%** | **0.9338** | — | Unperturbed reference |
-| **Gaussian Blur** | $\sigma = 0.5$ | **93.88%** | **0.9299** | $-0.36\%$ | Highly robust (imperceptible drop) |
-| **Gaussian Blur** | $\sigma = 1.0$ | **93.88%** | **0.9299** | $-0.36\%$ | Highly robust |
-| **Gaussian Blur** | $\sigma = 1.5$ | **93.88%** | **0.9299** | $-0.36\%$ | Highly robust |
-| **Illumination Dimming** | Factor $= 0.85$ ($-15\%$) | **94.24%** | **0.9338** | **0.00%** | **100% Invariant** |
-| **Illumination Boosting** | Factor $= 1.15$ ($+15\%$) | **94.24%** | **0.9338** | **0.00%** | **100% Invariant** |
-| **Gaussian Noise** | $\sigma = 0.01$ | **90.29%** | **0.8836** | $-3.95\%$ | Solid retention ($>90\%$) |
-| **Gaussian Noise** | $\sigma = 0.03$ | **85.97%** | **0.8257** | $-8.27\%$ | Moderate resilience ($>85\%$) |
-| **Gaussian Noise** | $\sigma = 0.05$ | **78.78%** | **0.7567** | $-15.46\%$ | Expected degradation under heavy noise |
+| Perturbation Scenario | Verified Operation | Intensity / Parameter | Accuracy (%) | Macro F1-Score | Degradation vs Clean |
+| :--- | :--- | :---: | :---: | :---: | :---: |
+| **Clean Baseline** | Unperturbed Reference | None | **94.24%** | **0.9338** | — |
+| **Spatial Box Blur** (labeled $\sigma=0.5$) | $3\times3$ Average Pooling | kernel=3 | **93.88%** | **0.9299** | $-0.36\%$ |
+| **Spatial Box Blur** (labeled $\sigma=1.0$) | $3\times3$ Average Pooling | kernel=3 | **93.88%** | **0.9299** | $-0.36\%$ |
+| **Spatial Box Blur** (labeled $\sigma=1.5$) | $5\times5$ Average Pooling | kernel=5 | **93.88%** | **0.9299** | $-0.36\%$ |
+| **Illumination Dimming** | Clamped Scaling | $\times 0.85$ ($-15\%$) | **94.24%** | **0.9338** | **0.00%** |
+| **Illumination Boosting** | Clamped Scaling | $\times 1.15$ ($+15\%$) | **94.24%** | **0.9338** | **0.00%** |
+| **Additive Tensor Noise** | Zero-Mean Gaussian + Clamp | $\sigma = 0.01$ | **90.29%** | **0.8836** | $-3.95\%$ |
+| **Additive Tensor Noise** | Zero-Mean Gaussian + Clamp | $\sigma = 0.03$ | **85.97%** | **0.8257** | $-8.27\%$ |
+| **Additive Tensor Noise** | Zero-Mean Gaussian + Clamp | $\sigma = 0.05$ | **78.78%** | **0.7567** | $-15.46\%$ |
 
-*Key Findings*:
-1. **Spatial Blur Invariance**: Even when spatial frequencies are smoothed with $\sigma=1.5$, accuracy drops by less than $0.4\%$. This occurs because the temporal difference stream $|K_f - K_{f+1}|$ retains dominant transition gradients even when spatial textures are softened.
-2. **Illumination Invariance**: Uniform lighting shifts have **zero impact** on classification, confirming that the factorized spatial batch normalization effectively normalizes global luminance variations.
-3. **Noise Resilience**: The model maintains $>90\%$ accuracy under mild additive sensor noise ($\sigma=0.01$) and $>85\%$ under substantial noise ($\sigma=0.03$).
+*Verified Methodological Details*:
+1. **Blur Implementation**: The operation labeled "Gaussian blur" in the scripts applies 2D spatial average pooling (`F.avg_pool2d`) per frame. Levels nominally denoted as $\sigma=0.5$ and $\sigma=1.0$ both evaluate the identical $3\times3$ box filter (padding 1, stride 1), explaining why their performance is computationally identical. Level $\sigma=1.5$ evaluates a $5\times5$ box filter (padding 2, stride 1).
+2. **Noise & Lighting**: Evaluated via tensor-level additive noise $\mathcal{N}(0, \sigma^2)$ and scalar multiplicative factors clamped to $[0, 1]$. No video codec re-compression (e.g., H.264 / HEVC GOP structures) was applied.
+3. **Invariance**: Performance under spatial smoothing remains within $0.4\%$ of clean baseline because the difference stream $|K_f - K_{f+1}|$ preserves temporal discontinuity edges even when textures are smoothed.
+
 
 ---
 
@@ -155,20 +160,24 @@ To simulate transmission over social media, re-compression, sensor degradation, 
 #### Bootstrap 95% Confidence Intervals (1,000 Iterations)
 To ensure empirical findings are not an artifact of test split composition, we executed non-parametric bootstrapping with 1,000 resamples:
 
-- **Held-Out Test Accuracy**: $\mu = 94.24\%$, $95\%\text{ CI} = [91.01\%, 96.76\%]$
-- **Macro F1-Score**: $\mu = 0.9338$, $95\%\text{ CI} = [0.8983, 0.9631]$
-- **Macro ROC-AUC**: $\mu = 0.9838$, $95\%\text{ CI} = [0.9679, 0.9935]$
+- **Held-Out Test Accuracy**: $\mu = 94.24\%$, $95\%\text{ CI} = [91.37\%, 96.76\%]$ (Identical across baseline and proposed)
+- **Macro F1-Score**: $\mu = 0.9338$, $95\%\text{ CI} = [0.9010, 0.9614]$ (Baseline: $0.9331$, $[0.9014, 0.9633]$)
+- **Macro ROC-AUC (OvR Standard)**: $\mu = 0.9824$, $95\%\text{ CI} = [0.9690, 0.9929]$ (Baseline: $0.9676$, $[0.9461, 0.9852]$)
+- **Interpolated Macro ROC-AUC**: $\mu = 0.9838$ (Baseline: $0.9688$)
+
+*Methodological Rule*: Do not infer statistically significant ROC-AUC superiority solely from non-overlapping or overlapping bootstrap confidence intervals. For formal validation of ROC-AUC superiority, a paired test (e.g. DeLong or paired bootstrap) is recommended.
 
 #### McNemar's Test for Paired Classifiers
 Comparing test predictions between Baseline 3D-CNN and Proposed Enhanced Model:
 
 $$\text{Contingency Table} = \begin{pmatrix} n_{11} (\text{both correct}) = 257 & n_{10} (\text{baseline only}) = 5 \\ n_{01} (\text{proposed only}) = 5 & n_{00} (\text{both incorrect}) = 11 \end{pmatrix}$$
 
-- At the clip level, both architectures achieve high nominal classification when trained on boundary-centered clips ($94.24\%$).
-- However, at the **video level** and in **temporal localization precision**, the proposed architecture delivers a statistically profound gain:
-  - Video Accuracy: **$93.02\%$ vs $83.72\%$** ($+9.30\%$)
-  - Localization Error: **$1.33$ frames vs $14.39$ frames** ($>10\times$ improvement)
-  - Authentic False Alarms: **$0$ vs $2$** ($100\%$ vs $86.67\%$ specificity)
+- At the clip level, both architectures achieve identical nominal classification ($94.24\%$). McNemar's test with continuity correction yields $\chi^2 = 0.1000, p = 0.7518$, confirming no statistically significant difference in clip label assignment.
+- At the **video level**, however, the proposed architecture delivers solid improvements:
+  - Video Accuracy: **$93.02\%$ vs $86.05\%$** under the unified protocol (**$93.02\%$ vs $83.72\%$** under original multi-scale config protocol).
+  - Authentic Specificity: **$100.00\%$ vs $86.67\%$** ($0$ vs $2$ false alarms on authentic test videos).
+  - Deletion Video Recall: **$76.92\%$ vs $69.23\%$** under unified protocol (**$76.92\%$ vs $61.54\%$** under original config protocol).
+  - Localization Note: The raw-frame structural similarity detector is independent of the model architecture, with both models achieving a median error of 2.0 frames across detected tampered sequences under the unified protocol.
 
 ---
 

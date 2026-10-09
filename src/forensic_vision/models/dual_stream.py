@@ -46,9 +46,14 @@ class DualStreamR2Plus1D(nn.Module):
         dropout: float = 0.3,
         use_cbam: bool = True,
         pretrained: bool = True,
+        use_tp_pool: bool = True,
+        use_diff_stream: bool = True,
     ) -> None:
         super().__init__()
         c1, c2, c3 = stage_channels
+        self.use_tp_pool = use_tp_pool
+        self.use_diff_stream = use_diff_stream
+        self.use_cbam = use_cbam
 
         def build_backbone() -> nn.Sequential:
             return nn.Sequential(
@@ -59,28 +64,53 @@ class DualStreamR2Plus1D(nn.Module):
             )
 
         self.rgb_backbone = build_backbone()
-        self.rgb_pool = TemporalPeakPooling(c3)
+        if self.use_tp_pool:
+            self.rgb_pool = TemporalPeakPooling(c3)
+        else:
+            self.rgb_pool = nn.Sequential(
+                nn.AdaptiveAvgPool3d((1, 1, 1)),
+                nn.Flatten(),
+            )
 
-        self.diff_backbone = build_backbone()
-        self.diff_pool = TemporalPeakPooling(c3)
+        if self.use_diff_stream:
+            self.diff_backbone = build_backbone()
+            if self.use_tp_pool:
+                self.diff_pool = TemporalPeakPooling(c3)
+            else:
+                self.diff_pool = nn.Sequential(
+                    nn.AdaptiveAvgPool3d((1, 1, 1)),
+                    nn.Flatten(),
+                )
 
-        # Gated Cross-Stream Fusion
-        self.gate = nn.Sequential(
-            nn.Linear(c3 * 2, c3),
-            nn.Sigmoid(),
-        )
+            # Gated Cross-Stream Fusion
+            self.gate = nn.Sequential(
+                nn.Linear(c3 * 2, c3),
+                nn.Sigmoid(),
+            )
 
-        # High-Capacity Classification Head
-        self.classifier = nn.Sequential(
-            nn.Linear(c3 * 2, 128),
-            nn.BatchNorm1d(128),
-            nn.GELU(),
-            nn.Dropout(p=dropout),
-            nn.Linear(128, num_classes),
-        )
+            # High-Capacity Classification Head
+            self.classifier = nn.Sequential(
+                nn.Linear(c3 * 2, 128),
+                nn.BatchNorm1d(128),
+                nn.GELU(),
+                nn.Dropout(p=dropout),
+                nn.Linear(128, num_classes),
+            )
+        else:
+            # Single-stream classification head
+            self.diff_backbone = None
+            self.diff_pool = None
+            self.gate = None
+            self.classifier = nn.Sequential(
+                nn.Linear(c3, 128),
+                nn.BatchNorm1d(128),
+                nn.GELU(),
+                nn.Dropout(p=dropout),
+                nn.Linear(128, num_classes),
+            )
 
     def forward(self, clips: torch.Tensor) -> torch.Tensor:
-        """Forward pass for dual-stream video forgery detection.
+        """Forward pass for video forgery detection.
 
         Args:
             clips: Tensor of shape (B, C, T, H, W).
@@ -94,6 +124,9 @@ class DualStreamR2Plus1D(nn.Module):
         # Stream 1: RGB Appearance
         f_rgb = self.rgb_pool(self.rgb_backbone(clips))
 
+        if not self.use_diff_stream:
+            return self.classifier(f_rgb)
+
         # Stream 2: Consecutive Frame Differences
         diffs = torch.abs(clips[:, :, 1:, :, :] - clips[:, :, :-1, :, :])
         f_diff = self.diff_pool(self.diff_backbone(diffs))
@@ -105,3 +138,4 @@ class DualStreamR2Plus1D(nn.Module):
 
         features = torch.cat([f_fused, f_diff], dim=1)
         return self.classifier(features)
+

@@ -53,11 +53,13 @@ def build_dataloader(
     batch_size: int,
     num_workers: int,
     shuffle: bool,
+    cache_in_memory: bool = False,
 ) -> DataLoader:
     dataset = ForgeryClipDataset(
         manifest_path=manifest_path,
         split=split,
         class_names=class_names,
+        cache_in_memory=cache_in_memory,
     )
     return DataLoader(
         dataset,

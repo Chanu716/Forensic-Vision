@@ -5,19 +5,22 @@ Deep learning-based video forgery identification and exact temporal localization
 
 ### 🏆 Benchmark Highlights
 - **Detailed Results & Comparison**: See [BENCHMARK_RESULTS.md](BENCHMARK_RESULTS.md)
-- **Architecture**: Dual-Stream R(2+1)D with CBAM Attention & Temporal Peak-Preserving Pooling (TP-Pool)
+- **Manuscript Corrections & Technical Audit Guide**: See [docs/MANUSCRIPT_CORRECTIONS.md](docs/MANUSCRIPT_CORRECTIONS.md)
+- **Standardized Head-to-Head Report**: See [outputs/reports/standardized_comparison_summary.md](outputs/reports/standardized_comparison_summary.md)
+- **Architecture**: Dual-Stream R(2+1)D with 3D-CBAM Attention & Temporal Peak-Preserving Pooling (TP-Pool)
 - **Validation Accuracy**: **94.59%** (Macro F1: **0.9367**)
-- **Held-Out Test Accuracy**: **94.24%** (Macro F1: **0.9338**)
-- **Video-Level Accuracy**: **93.02%** (100% on authentic, 100% on insertion, 76.9% on deletion)
-- **Temporal Localization Error**: **$\le 1$ frame** of ground truth on UCF-101
+- **Held-Out Test Accuracy**: **94.24%** (Macro F1: **0.9338**, OvR Macro ROC-AUC: **0.9824**)
+- **Video-Level Accuracy**: **93.02%** (100% on authentic, 100% on insertion, 76.92% on deletion)
+- **Temporal Localization**: Median error of **2.0 frames** (51.9% $\le 2$ frames; mean: 34.39 frames across 43 test videos) on UCF-101 synthetic manipulations
 
 ---
 
 Current capabilities:
 - **Dual-Stream R(2+1)D model**: Raw RGB appearance stream + Inter-frame motion difference stream with learned sigmoid gating.
-- **Boundary-aware dataset preparation**: Automatically centers training clips on exact splice/deletion transitions.
-- **Calibrated MS-SSIM localization**: Dynamic drop sensitivity and edge artifact filtering for pinpoint temporal boundary detection.
-- **Automated reporting & plotting**: Generates JSON metrics and visual anomaly plots (`*_localization.png`).
+- **Boundary-aware dataset preparation**: Automatically centers training clips on exact splice/deletion transitions with zero cross-split leakage.
+- **Calibrated SSIM localization**: Dynamic drop calibration ($\tau_{\text{eff}} = \max(0.35, \min(0.85, \text{median} - 0.14))$) and artifact clustering.
+- **Automated reporting & plotting**: Generates standardized JSON metrics, ROC/PR curves, and visual anomaly plots (`*_localization.png`).
+
 
 ## Initial layout
 
@@ -95,4 +98,4 @@ This writes a JSON report under `outputs/reports/` with:
 
 ## Paper assumptions
 
-The source paper omits several implementation details. Assumptions and deviations are tracked in [docs/assumptions.md](/d:/Forensic Vision/Forensic-Vision/docs/assumptions.md).
+The source paper omits several implementation details. Assumptions, corrections, and benchmark results are tracked in [docs/assumptions.md](docs/assumptions.md), [BENCHMARK_RESULTS.md](BENCHMARK_RESULTS.md), and [reports/RESULTS_RECONCILIATION.md](reports/RESULTS_RECONCILIATION.md).
