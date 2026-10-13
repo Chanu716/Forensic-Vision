@@ -227,8 +227,13 @@ def extract_clip_frame_diff_features(clip: np.ndarray) -> tuple[np.ndarray, floa
     clip: np.ndarray of shape (T, H, W, C) in [0, 255] or [0, 1].
     Returns: (diff_trajectory, median_diff, mad_diff, peak_zscore)
     """
+    if len(clip) < 2:
+        return np.zeros(0, dtype=np.float32), 0.0, 0.0, 0.0
+
     if clip.dtype != np.float32 and clip.dtype != np.float64:
         clip = clip.astype(np.float32) / 255.0
+    elif np.max(clip) > 1.0:
+        clip = clip / 255.0
 
     # Frame differences across time (T-1, H, W, C)
     diffs = np.abs(clip[1:] - clip[:-1])
@@ -241,6 +246,7 @@ def extract_clip_frame_diff_features(clip: np.ndarray) -> tuple[np.ndarray, floa
     peak_z = float((peak_val - med) / (mad + 1e-5))
 
     return energy_t, med, mad, peak_z
+
 
 
 def evaluate_classical_frame_diff(
