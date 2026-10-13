@@ -1,0 +1,106 @@
+[
+  {
+    "model_name": "ResNet-18 + Temporal Pooling",
+    "parameters": 11440195,
+    "epochs_trained": 10,
+    "best_epoch": 5,
+    "training_time_seconds": 301.4635615348816,
+    "inference_time_ms_per_clip": 9.137121035898332,
+    "accuracy": 0.5323741007194245,
+    "macro_precision": 0.5963396506874767,
+    "macro_recall": 0.5181795067378592,
+    "macro_f1": 0.534722457922743,
+    "macro_roc_auc_ovr": 0.8275123141812167,
+    "macro_roc_auc_interp": 0.8303049936596753,
+    "authentic_roc_auc": 0.7878681626928471,
+    "insertion_roc_auc": 0.9957744972186564,
+    "deletion_roc_auc": 0.6988942826321467,
+    "confusion_matrix": [
+      [
+        49,
+        0,
+        43
+      ],
+      [
+        1,
+        69,
+        44
+      ],
+      [
+        42,
+        0,
+        30
+      ]
+    ],
+    "ci_95": {
+      "accuracy": [
+        0.4747302158273381,
+        0.5899280575539568
+      ],
+      "macro_f1": [
+        0.4816570968511812,
+        0.5842858383214918
+      ],
+      "macro_roc_auc_ovr": [
+        0.7941079648659131,
+        0.8585094691172334
+      ],
+      "macro_roc_auc_interpolated": [
+        0.7954686880023001,
+        0.8598880845607892
+      ]
+    }
+  },
+  {
+    "model_name": "ResNet-18 + Bidirectional GRU",
+    "parameters": 12032323,
+    "epochs_trained": 10,
+    "best_epoch": 2,
+    "training_time_seconds": 303.968945980072,
+    "inference_time_ms_per_clip": 9.21000336571563,
+    "accuracy": 0.4856115107913669,
+    "macro_precision": 0.5939583333333333,
+    "macro_recall": 0.4820747520976354,
+    "macro_f1": 0.4485015008081274,
+    "macro_roc_auc_ovr": 0.8114861488899988,
+    "macro_roc_auc_interp": 0.8140207939222314,
+    "authentic_roc_auc": 0.7566619915848527,
+    "insertion_roc_auc": 0.93528027385537,
+    "deletion_roc_auc": 0.7425161812297734,
+    "confusion_matrix": [
+      [
+        81,
+        0,
+        11
+      ],
+      [
+        57,
+        36,
+        21
+      ],
+      [
+        54,
+        0,
+        18
+      ]
+    ],
+    "ci_95": {
+      "accuracy": [
+        0.42805755395683454,
+        0.5432553956834532
+      ],
+      "macro_f1": [
+        0.3866001539415517,
+        0.5086725183409828
+      ],
+      "macro_roc_auc_ovr": [
+        0.7698996630390142,
+        0.846401781757189
+      ],
+      "macro_roc_auc_interpolated": [
+        0.7711997598028726,
+        0.8477146138817434
+      ]
+    }
+  }
+]

@@ -617,6 +617,15 @@ def main() -> None:
 
     # Save summary JSON and CSV
     json_path = reports_out / "ablation_results.json"
+    if json_path.exists() and args.variant != "all":
+        try:
+            existing_rows = json.loads(json_path.read_text(encoding="utf-8"))
+            row_dict = {r["variant_id"]: r for r in existing_rows}
+            for r in summary_rows:
+                row_dict[r["variant_id"]] = r
+            summary_rows = list(row_dict.values())
+        except Exception as e:
+            print(f"[!] Warning reading existing ablation results: {e}")
     json_path.write_text(json.dumps(summary_rows, indent=2), encoding="utf-8")
     print(f"\n[+] Saved ablation results JSON to: {json_path}")
 

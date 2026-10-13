@@ -22,4 +22,7 @@ data/
 data/**/*.npy
 outputs/*
 !outputs/reports_enhanced/
+!outputs/reports_comparative/
 train.log
+*.exe
+*.tex

@@ -193,5 +193,44 @@
       0.9690467977006763,
       0.9929492560560514
     ]
+  },
+  {
+    "variant_id": "variant_e_10ep",
+    "name": "Variant E (10-Epoch Matched): Full Proposed Model",
+    "short_name": "Proposed (10ep Matched)",
+    "streams": "RGB + Frame Diff",
+    "temporal_conv": "R(2+1)D Factorized",
+    "attention": "3D-CBAM",
+    "pooling": "TP-Pool",
+    "fusion": "Gated Sigmoid",
+    "parameters": 1975101,
+    "accuracy": 0.9496402877697842,
+    "macro_precision": 0.9480713696369637,
+    "macro_recall": 0.9389037206542928,
+    "macro_f1": 0.9417653414108105,
+    "macro_roc_auc_ovr": 0.9954376345598993,
+    "macro_roc_auc_interpolated": 0.99576561840439,
+    "macro_ap": 0.9894589717637156,
+    "authentic_roc_auc": 0.995617110799439,
+    "insertion_roc_auc": 1.0,
+    "deletion_roc_auc": 0.9906957928802589,
+    "video_level_accuracy": 0.9302325581395349,
+    "authentic_specificity": 0.8666666666666667,
+    "insertion_recall": 1.0,
+    "deletion_recall": 0.9230769230769231,
+    "mean_loc_error": 34.388888888888886,
+    "median_loc_error": 2.0,
+    "ci_accuracy": [
+      0.9244604316546763,
+      0.9748201438848921
+    ],
+    "ci_f1": [
+      0.9114676116405837,
+      0.9693677311759733
+    ],
+    "ci_roc_auc": [
+      0.9912606601247653,
+      0.99836188710898
+    ]
   }
 ]
