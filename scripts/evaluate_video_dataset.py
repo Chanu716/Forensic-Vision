@@ -18,6 +18,7 @@ if str(SRC_PATH) not in sys.path:
 
 from forensic_vision.config import load_config
 from forensic_vision.datasets.preparation import sliding_windows
+from forensic_vision.evaluation.video_level import decide_video_label
 from forensic_vision.localization.msssim import compute_frame_msssim_scores
 from forensic_vision.models.three_d_cnn import build_model
 from forensic_vision.preprocessing.video_io import read_video_frames
@@ -153,25 +154,7 @@ def main() -> None:
             use_multiscale=bool(localization_cfg.get("use_multiscale", True)),
         )
 
-        max_insertion = float(probabilities[:, 1].max()) if len(probabilities) > 0 else 0.0
-        max_deletion = float(probabilities[:, 2].max()) if len(probabilities) > 0 else 0.0
-        mean_auth = float(mean_probs[0])
-        k = max(1, int(np.ceil(0.2 * len(probabilities))))
-        top_k_ins = float(np.mean(np.sort(probabilities[:, 1])[-k:]))
-        top_k_del = float(np.mean(np.sort(probabilities[:, 2])[-k:]))
-
-        if max_insertion >= 0.65 and max_insertion > max_deletion:
-            pred_label = "frame_insertion"
-        elif max_deletion >= 0.75 and max_deletion > max_insertion and localization.forgery_type != "authentic":
-            pred_label = "frame_deletion"
-        elif localization.forgery_type == "frame_insertion" and max_insertion >= 0.20:
-            pred_label = "frame_insertion"
-        elif localization.forgery_type == "frame_deletion" and max_deletion >= 0.10:
-            pred_label = "frame_deletion"
-        elif max_deletion >= 0.50 and max_deletion > max_insertion and max_deletion > mean_auth:
-            pred_label = "frame_deletion"
-        else:
-            pred_label = "authentic"
+        pred_label = decide_video_label(probabilities, localization.forgery_type)
 
         pred_idx = label_to_idx[pred_label]
         is_correct = (pred_idx == gt_idx)

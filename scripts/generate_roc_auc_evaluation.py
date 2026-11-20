@@ -375,7 +375,9 @@ def evaluate_action_categories(
     ax.set_xticks(x)
     ax.set_xticklabels(cat_names_plot, fontsize=9.5, fontweight="medium")
     ax.set_ylim([60, 105])
-    ax.axhline(94.24, color="crimson", linestyle="--", alpha=0.7, label="Dataset Mean Accuracy (94.2%)")
+    total = sum(r["num_samples"] for r in cat_results.values())
+    overall_acc = 100.0 * sum(r["accuracy"] * r["num_samples"] for r in cat_results.values()) / total
+    ax.axhline(overall_acc, color="crimson", linestyle="--", alpha=0.7, label=f"Overall Test Accuracy ({overall_acc:.2f}%)")
     ax.legend(loc="lower right", frameon=True, fontsize=10)
     ax.grid(True, linestyle="--", alpha=0.5, axis="y")
 
